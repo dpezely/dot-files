@@ -1,0 +1,9 @@
+;;; .asdf-install		-*- Lisp -*-
+
+;; This is defined within ~/.sbclrc
+(pushnew cl-user:*site-local-asdf-install-locations* asdf-install:*locations* :test 'equal)
+
+
+(defparameter asdf-install::*verify-gpg-signatures* :unknown-locations)
+
+

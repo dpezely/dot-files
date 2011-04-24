@@ -1,0 +1,189 @@
+;; settings.el
+
+(setq inhibit-startup-message t
+      default-major-mode 'text-mode
+      scroll-step 2
+      display-time-day-and-date t
+      sentence-end-double-space t
+      version-control nil
+      trim-versions-without-asking t
+      auto-save-interval 400
+      truncate-partial-width-windows t)
+
+
+
+(setq today-visible-calendar-hook 'calendar-star-date
+      diary-display-hook 'fancy-diary-display
+      list-diary-entries-hook 'include-other-diary-files
+      view-diary-entries-initially t
+      number-of-diary-entries 5
+      european-calendar-style t
+      diary-file (expand-file-name "~/etc/SCHEDULE"))
+;; Have diary mode notify me of any appointments.
+;;(add-hook 'diary-hook 'appt-make-list) ;broken as of emacs-24.0.50
+
+
+;; (setq Man-switches (concat "-M " 
+;; 			   (let ((existing (getenv "MANPATH")))
+;; 			     (if existing
+;; 				 (concat existing ":")))
+;; 			   "/usr/man:/usr/local/share/man:/usr/local/git/man"))
+
+
+;; Used for Shell and SSH:
+(add-hook 'comint-mode-hook 
+	  '(lambda () 
+	    (line-number-mode 1)
+	    (setq comint-output-filter-functions (list
+						  'comint-watch-for-password-prompt
+						  'comint-postoutput-scroll-to-bottom))))
+
+(setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
+
+;; set up unicode
+(prefer-coding-system       'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+
+(setq default-buffer-file-coding-system 'utf-8)
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+
+
+;;; settings for Common Lisp development
+
+(setq lisp-indent-function 'common-lisp-indent-function
+      ;;slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+      slime-startup-animation nil
+      ;;See OS-specific startup .el for values:
+      ;; hyperspec-prog "/usr/local/slime/hyperspec"
+      ;; hyperspec-path "/usr/share/doc/HyperSpec/"
+      ;; w3m-command "/usr/local/bin/w3m"
+      common-lisp-hyperspec-root (concat "file://" hyperspec-path)
+      common-lisp-hyperspec-symbol-table (concat hyperspec-path "Data/Map_Sym.txt")
+      ;;See http://www.emacswiki.org/cgi-bin/emacs-en/emacs-w3m
+      browse-url-browser-function 'w3m
+      w3m-home-page cltl2-url
+      w3m-symbol 'w3m-default-symbol
+      w3m-key-binding 'info
+      w3m-coding-system 'utf-8
+      w3m-default-coding-system 'utf-8
+      w3m-file-coding-system 'utf-8
+      w3m-file-name-coding-system 'utf-8
+      w3m-terminal-coding-system 'utf-8
+      ;;slime-net-coding-system 'utf-8-unix
+      paren-priority 'close
+      paren-match-face 'bold
+      paren-sexp-mode t)
+
+;;(set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
+
+;;http://www.emacswiki.org/cgi-bin/wiki/mic-paren.el
+(require 'mic-paren)
+(paren-activate)
+
+(add-hook 'lisp-mode-hook '(lambda () 
+			    (setq font-lock-maximum-decoration t)
+			    (paren-toggle-matching-quoted-paren 1)
+			    (show-paren-mode t)))
+
+;;http://mumble.net/~campbell/emacs/paredit.html
+;(add-hook 'lisp-mode-hook '(lambda () (paredit-mode 1)))
+
+;(font-lock-add-keywords 
+; 'lisp-mode
+; ;allegro macros:
+; '(("\\<\\(if\\*\\|then\\|elseif\\|else\\)\\>" . font-lock-keyword-face)))
+
+
+
+;;; for remote slime sessions: [watch "lisp movies"]
+
+;; On local shell:
+;; ssh -L4005:127.0.0.1:4005 daniel@zyzzy.play.org
+
+;; On local Emacs:
+;; (let ((remote-path "/ssh:daniel@zyzzy.play.org:"))
+;;   (setf slime-translate-to-lisp-filename-function
+;; 	(lambda (filename)
+;; 	  (subseq filename (length remote-path)))
+;; 	slime-translate-from-lisp-filename-function
+;; 	(lambda (filename)
+;; 	  (concat remote-path filename))))
+
+;; Use single channel for slime sessions to remote hosts.
+;; On remote lisp:
+;(asdf:operate 'asdf:load-op :swank)
+;(setf swank:*use-dedicated-output-stream* nil)
+;(swank:create-server :port 4005 :dont-close t)
+
+
+;;(setq org-export-with-toc nil)
+(setq org-export-author-info nil
+      org-export-time-stamp-file nil
+      org-export-headline-levels 2
+      org-export-html-coding-system 'utf-8
+      org-export-html-style "<style type=\"text/css\"><!--
+  html {
+	font-size: 12pt;
+  }
+  a {text-decoration:none}
+  .title { text-align: center; }
+  #table-of-contents {font-size:75%}
+  .todo  { color: red; }
+  .done { color: green; }
+  .timestamp { color: grey }
+  .timestamp-kwd { color: CadetBlue }
+  .tag { background-color:lightblue; font-weight:normal }
+  .target { background-color: lavender; }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+  }
+  table { border-collapse: collapse; }
+  td, th {
+	vertical-align: top;
+  }
+--></style>
+")
+
+
+(add-hook 'text-mode-hook
+	  '(lambda () 
+	    (set-fill-column 76) 
+	    (auto-fill-mode 1)))
+
+(add-hook 'c-mode-common-hook
+	  '(lambda ()
+;;	    (hide-ifdef-mode)
+;;	    (setq tab-width 4)
+	    (set-fill-column 79)
+	    (auto-fill-mode 1)))
+
+(add-hook 'javascript-mode-hook
+	  '(lambda ()
+;;	    (setq tab-width 4)
+	    (set-fill-column 79)
+	    (auto-fill-mode 1)))
+
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+(add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
+
+;;(autoload 'ruby-mode "ruby-mode" "Load ruby-mode")
+;;(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+;;(add-hook 'ruby-mode-hook 'turn-on-font-lock)
+;;(add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
+
+;;(add-to-list 'auto-mode-alist '("\\.rhtml$" . html-mode)) ;ruby on rails
+(add-to-list 'auto-mode-alist '("\\.xhtml$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.json$" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.as$" . actionscript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.mxml$" . xml-mode)) ;Flex/Flash
+;;(add-to-list 'auto-mode-alist '("\\.php$" . perl-mode))
+;;(add-to-list 'auto-mode-alist '("\\.inc$" . perl-mode))
+
+(add-to-list 'completion-ignored-extensions ".swf") ; shockwave-flash
+;end
