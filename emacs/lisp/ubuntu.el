@@ -4,28 +4,32 @@
 (menu-bar-mode 0)
 (transient-mark-mode 1)			; highlight selected region?
 
-;; fix clipboard problem:
-(setq x-select-enable-clipboard t
-      interprogram-paste-function 'x-cut-buffer-or-selection-value)
+(when window-system
+  (setq scroll-bar-mode 'right)
+  ;; Force reset of placing scroll-bars:
+  (scroll-bar-mode 0)
+  (scroll-bar-mode 1)
 
-;;(set-default-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
-(set-default-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
+  ;; fix clipboard problem:
+  (setq x-select-enable-clipboard t
+	interprogram-paste-function 'x-cut-buffer-or-selection-value)
 
-(defun tall ()
-  (interactive)
-  ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-  (set-frame-position (selected-frame) 140 1)
-  (set-frame-height (selected-frame) 49)
-  (set-frame-width (selected-frame) 100))
+  ;;(set-default-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
+  ;;(set-default-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
 
-(defun wide ()
-  (interactive)
-  ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-  (set-frame-position (selected-frame) 1 1)
-  (set-frame-height (selected-frame) 49)
-  (set-frame-width (selected-frame) 132))
+  (defun tall ()
+    (interactive)
+    ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
+    (set-frame-position (selected-frame) 140 1)
+    (set-frame-height (selected-frame) 49)
+    (set-frame-width (selected-frame) 100))
 
-(tall)
+  (defun wide ()
+    (interactive)
+    ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
+    (set-frame-position (selected-frame) 60 50)
+    (set-frame-height (selected-frame) 49)
+    (set-frame-width (selected-frame) 182)))
 
 ;;
 ;; The rationale for this config is for a Linux workstation to
@@ -79,10 +83,3 @@
 ;; 		      xrefs)
 ;; 	      (print xrefs)
 ;; 	      (slime-edit-definition-cont xrefs name where))))
-
-;;; Recommended for CCL:
-
-;;(setq slime-net-coding-system 'utf-8-unix)
-;;(slime-setup '(slime-fancy))
-
-;End.
