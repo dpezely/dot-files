@@ -8,9 +8,10 @@
 ;; Install aspell via Mac Ports...
 ;; http://blacka.com/david/2010/01/17/switching-to-cocoa-emacs/
 
+(transient-mark-mode 1)		; highlight selected region?
+
 (when window-system
   (tool-bar-mode 0)
-  (transient-mark-mode 1)		; highlight selected region?
 
   (defun tall ()
     (interactive)
@@ -21,12 +22,12 @@
 
   (defun wide ()
     (interactive)
-    ;; MacBookAir 11.6" using 185 columns allows edge of Mail list view to be visible underneath
+    ;; MacBookAir 11.6" using 185 columns allows edge of Mail list view
+    ;; to be visible underneath
     (set-frame-position (selected-frame) 10 20)
     (set-frame-height (selected-frame) 46)
     (set-frame-width (selected-frame) 185)))
 
-(tall)
 
 (setq ns-command-modifier 'meta	     ;use Command (not Option) as Meta
       ns-option-modifier 'none)
@@ -37,6 +38,8 @@
 (global-unset-key "") ; was 'iconify-or-deiconify-frame (use Cmd-H on MacOSX)
 
 
+(setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
+
 ;; include 
 (setq Man-switches (concat "-M " 
 			   (let ((existing (getenv "MANPATH")))
@@ -46,6 +49,7 @@
 			   "/usr/local/man:/usr/local/share/man:"
 			   "/opt/local/share/man:/sw/share/man"))
 
+;;(add-to-list 'load-path "/usr/local/go/misc/emacs" t)
 
 ;; http://common-lisp.net/project/slime/doc/html/slime.html
 (add-to-list 'load-path "/usr/local/lisp/slime")
@@ -56,8 +60,8 @@
       cltl2-url "file:///usr/local/lisp/cltl/clm/node1.html"
       hyperspec-path "/usr/local/lisp/HyperSpec/"
       hyperspec-prog "/usr/local/lisp/slime/hyperspec"
-      ispell-program-name "/opt/local/bin/aspell"
-      w3m-command "/opt/local/bin/w3m")
+      ispell-program-name "/usr/local/bin/aspell"
+      w3m-command "/usr/local/bin/w3m")
 
 ;(setenv "SBCL_HOME" "/usr/local/bin/sbcl")
 
@@ -88,13 +92,4 @@
 		      xrefs)
 	      (print xrefs)
 	      (slime-edit-definition-cont xrefs name where))))
-
-;;; Recommended for CCL:
-
-;;(setq slime-net-coding-system 'utf-8-unix)
-;;(slime-setup '(slime-fancy))
-
-
-; Then, when ready to work on your Lisp code, type: M-x slime
-
 ;End.
