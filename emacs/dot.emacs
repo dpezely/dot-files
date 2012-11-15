@@ -28,29 +28,44 @@
 (load "utils")	  ; (defun ...)
 (load "keyboard") ; (define-key ...)
 
-;;(load "actionscript-mode")
-
-;;(load (expand-file-name "/usr/local/lisp/quicklisp/slime-helper"))
-(require 'slime)
-(slime-setup '(slime-repl slime-editing-commands slime-scratch slime-fontifying-fu))
+(load (expand-file-name "/usr/local/lisp/quicklisp/slime-helper"))
+;;(require 'slime)
+(slime-setup '(slime-repl		;excerpted from 'slime-fancy
+	       ;;slime-autodoc ;too gaudy, too distracting
+	       slime-c-p-c
+	       slime-editing-commands
+	       slime-fancy-inspector
+	       slime-fuzzy
+	       slime-presentations
+	       slime-scratch
+	       slime-references
+	       slime-package-fu
+	       slime-fontifying-fu))
 ;; Then, when ready to work on your Lisp code, type: M-x slime
 
 ;; w3m is optional, used by SLIME for HyperSpec; may use Firefox instead.
-(add-to-list 'load-path (expand-file-name "~/emacs/lisp/emacs-w3m"))
+;; You may need to manually install emacs-w3m:
+;; ./configure --with-emacs=/Applications/Emacs.app/Contents/MacOS/Emacs 
+;;(add-to-list 'load-path (expand-file-name "~/emacs/lisp/emacs-w3m"))
 (require 'w3m-load)
 ;;You may need to manually install: /Applications/Emacs.app/Contents/Resources/site-lisp/w3m/
 (load "w3m")
 
 ;;(setenv "PATH" (concat (getenv "PATH") ":/usr/local/git/bin"))
+;; git clone git://github.com/tsgates/git-emacs.git
+;;(require 'git-emacs)
 (require 'git)
-;; (defun git-call-process (buffer &rest args)
-;;   "Wrapper for call-process that sets environment strings."
-;;   (apply #'call-process "/usr/local/git/bin/git" nil buffer nil args))
+(defun git-call-process (buffer &rest args)
+  "Wrapper for call-process that sets environment strings."
+  (apply #'call-process "/usr/local/bin/git" nil buffer nil args))
+
+;;(require 'go-mode-load)
 
 (display-time)
 
 (defun Home () 
-  "Upon starting emacs, upon login-- execute this function"
+  "Upon starting emacs, upon login-- execute this function.
+Within .xinitrc, add: /usr/local/bin/emacs -f Home -f wide &"
   (interactive)
   (find-file "~/etc/REMINDER")
   (diary 0)
@@ -60,4 +75,5 @@
     (split-window-with-another-buf "REMINDER"))
   (server-start)) ;then in .bashrc: export EDITOR=emacsclient
 
-(Home) ;or upon start-up, add: -f Home
+(Home)
+(wide)

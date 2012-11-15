@@ -53,7 +53,19 @@
   "Pez-ism: split the current window, but change the other window 
   to another buffer, rather than defaulting to same buffer"
   (interactive "BBuffer: ")
+  ;;#+emacs24 (split-window-below)
+  ;;#-emacs24
   (split-window-vertically)
+  (other-window 1)
+  (switch-to-buffer buf))
+
+(defun split-window-horiz-with-another-buf (buf)
+  "Pez-ism: split the current window, but change the other window 
+  to another buffer, rather than defaulting to same buffer"
+  (interactive "BBuffer: ")
+  ;;#+emacs24 (split-window-right)
+  ;;#-emacs24
+  (split-window-horizontally)
   (other-window 1)
   (switch-to-buffer buf))
 

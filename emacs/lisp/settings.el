@@ -20,8 +20,9 @@
       european-calendar-style t
       diary-file (expand-file-name "~/etc/SCHEDULE"))
 ;; Have diary mode notify me of any appointments.
-;;(add-hook 'diary-hook 'appt-make-list) ;broken as of emacs-24.0.50
-
+(if (< emacs-major-version 24)
+    (add-hook 'diary-hook 'appt-make-list)
+    (appt-activate 1))
 
 ;; (setq Man-switches (concat "-M " 
 ;; 			   (let ((existing (getenv "MANPATH")))
@@ -41,6 +42,9 @@
 (setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
 
 ;; set up unicode
+(set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
+(setenv "LANG" "en_US.UTF-8")		;for external programs; e.g., SBCL
+
 (prefer-coding-system       'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
@@ -76,7 +80,6 @@
       paren-match-face 'bold
       paren-sexp-mode t)
 
-;;(set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
 
 ;;http://www.emacswiki.org/cgi-bin/wiki/mic-paren.el
 (require 'mic-paren)
@@ -100,10 +103,10 @@
 ;;; for remote slime sessions: [watch "lisp movies"]
 
 ;; On local shell:
-;; ssh -L4005:127.0.0.1:4005 daniel@zyzzy.play.org
+;; ssh -L4005:127.0.0.1:4005 daniel@shell.example.com
 
 ;; On local Emacs:
-;; (let ((remote-path "/ssh:daniel@zyzzy.play.org:"))
+;; (let ((remote-path "/ssh:daniel@shell.example.com:"))
 ;;   (setf slime-translate-to-lisp-filename-function
 ;; 	(lambda (filename)
 ;; 	  (subseq filename (length remote-path)))
@@ -118,36 +121,27 @@
 ;(swank:create-server :port 4005 :dont-close t)
 
 
-;;(setq org-export-with-toc nil)
+;;(setq org-export-with-toc nil) ;;Instead, use: #+OPTIONS: toc:nil 
 (setq org-export-author-info nil
+      org-export-email-info nil
       org-export-time-stamp-file nil
       org-export-headline-levels 2
+      org-use-sub-superscripts nil
+      org-emphasis-alist '(("*" bold "<b>" "</b>")
+			   ("/" italic "<em>" "</em>")
+			   ("_" underline 
+			    "<span style=\"text-decoration:underline;\">" "</span>")
+			   ("=" org-code "<code>" "</code>" verbatim)
+			   ("~" org-verbatim "<code>" "</code>" verbatim))
       org-export-html-coding-system 'utf-8
-      org-export-html-style "<style type=\"text/css\"><!--
-  html {
-	font-size: 12pt;
-  }
-  a {text-decoration:none}
-  .title { text-align: center; }
-  #table-of-contents {font-size:75%}
-  .todo  { color: red; }
-  .done { color: green; }
-  .timestamp { color: grey }
-  .timestamp-kwd { color: CadetBlue }
-  .tag { background-color:lightblue; font-weight:normal }
-  .target { background-color: lavender; }
-  pre {
-	border: 1pt solid #AEBDCC;
-	background-color: #F3F5F7;
-	padding: 5pt;
-	font-family: courier, monospace;
-  }
-  table { border-collapse: collapse; }
-  td, th {
-	vertical-align: top;
-  }
---></style>
-")
+      org-export-html-style-extra "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
+	body {font-family:sans-serif}
+	a {text-decoration:none}
+	#table-of-contents {font-size:75%}
+	/*]]>*/--></style>"
+      org-export-html-validation-link nil
+      org-export-html-postamble nil
+      org-export-copy-to-kill-ring nil)
 
 
 (add-hook 'text-mode-hook

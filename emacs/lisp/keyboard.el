@@ -42,7 +42,8 @@
 
 ;; Altered mappings:
 (define-key esc-map "-" 'shrink-window)
-(define-key ctl-x-map "2" 'split-window-with-another-buf) ;was 'split-window-vertically
+(global-set-key "\C-x2" 'split-window-with-another-buf) ;was 'split-window-vertically
+(global-set-key "\C-x3" 'split-window-horiz-with-another-buf) ;was 'split-window-horizontally
 
 (add-hook 'shell-mode-hook '(lambda () 
 			     (define-key shell-mode-map "\C-c." 'bury-buffer)))
@@ -77,3 +78,6 @@
 (add-hook 'html-mode-hook '(lambda ()
 			    (define-key html-mode-map "\C-m" 'newline-and-indent)))
 
+(add-hook 'w3m-mode-hook '(lambda ()
+			   (define-key esc-map "[" 'top-of-window) 
+			   (define-key esc-map "]" 'bottom-of-window)))
