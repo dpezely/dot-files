@@ -1,0 +1,11 @@
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Skype
+Comment=
+Icon=skype
+Exec=/usr/bin/skype
+Path=
+Terminal=false
+StartupNotify=false

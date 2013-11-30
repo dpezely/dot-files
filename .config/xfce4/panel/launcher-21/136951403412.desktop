@@ -1,0 +1,11 @@
+
+[Desktop Entry]
+Type=Application
+Name=QMPDClient
+GenericName=Qt4 based MPD client
+Comment=A nicer MPD client
+Exec=qmpdclient
+Categories=Qt;Network;Music;
+Icon=qmpdclient
+Terminal=false
+X-XFCE-Source=file:///usr/share/applications/qmpdclient.desktop

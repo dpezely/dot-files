@@ -1,0 +1,8 @@
+button-icon=/usr/share/xfcemint/visualisation-logo.png
+launcher-show-name=true
+launcher-show-description=true
+favorites=firefox.desktop,mintInstall.desktop,xfce-settings-manager.desktop,xchat.desktop,exo-terminal-emulator.desktop,exo-file-manager.desktop
+recent=exo-terminal-emulator.desktop,firefox.desktop,xfce-wm-settings.desktop,xfce-settings-manager.desktop,gufw.desktop,xscreensaver-properties.desktop,openjdk-7-policytool.desktop,xfce-ui-settings.desktop,blueman-manager.desktop,xfce4-notifyd-config.desktop
+menu-width=400
+menu-height=500
+
