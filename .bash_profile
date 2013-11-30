@@ -2,4 +2,5 @@
 
 one_agent
 
-export PATH=/opt/local/sbin:$PATH
+[ -x /usr/bin/acpi ] && acpi -b
+
