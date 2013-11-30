@@ -1,6 +1,7 @@
 ;; settings.el
 
 (setq inhibit-startup-message t
+      initial-scratch-message nil
       default-major-mode 'text-mode
       scroll-step 2
       display-time-day-and-date t
@@ -147,7 +148,7 @@
 (add-hook 'text-mode-hook
 	  '(lambda () 
 	    (set-fill-column 76) 
-	    (auto-fill-mode 1)))
+	    (visual-line-mode nil)))
 
 (add-hook 'c-mode-common-hook
 	  '(lambda ()
@@ -162,6 +163,11 @@
 	    (set-fill-column 79)
 	    (auto-fill-mode 1)))
 
+(add-hook 'go-mode-hook
+	  '(lambda ()
+;;	    (setq tab-width 4)
+	    (add-hook 'before-save-hook #'gofmt-before-save)))
+
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
 (add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
@@ -172,8 +178,8 @@
 ;;(add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
 
 ;;(add-to-list 'auto-mode-alist '("\\.rhtml$" . html-mode)) ;ruby on rails
-(add-to-list 'auto-mode-alist '("\\.xhtml$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.json$" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.xhtml$" . html-mode))
+;;(add-to-list 'auto-mode-alist '("\\.json$" . javascript-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.as$" . actionscript-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.mxml$" . xml-mode)) ;Flex/Flash
 ;;(add-to-list 'auto-mode-alist '("\\.php$" . perl-mode))

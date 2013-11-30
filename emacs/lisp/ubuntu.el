@@ -20,41 +20,35 @@
   (defun tall ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-position (selected-frame) 140 1)
-    (set-frame-height (selected-frame) 49)
+    (set-frame-position (selected-frame) 140 25)
+    (set-frame-height (selected-frame) 48)
     (set-frame-width (selected-frame) 100))
 
   (defun wide ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-position (selected-frame) 60 50)
-    (set-frame-height (selected-frame) 49)
-    (set-frame-width (selected-frame) 182)))
+    (set-frame-position (selected-frame) 30 25)
+    (set-frame-height (selected-frame) 48)
+    (set-frame-width (selected-frame) 182))
 
-;;
+  (wide))
+
 ;; The rationale for this config is for a Linux workstation to
 ;; essentially be functionally identical to a deployed server, with
 ;; the obvious addition of Desktop toolchain.
-;;
-;; (This is in contrast to a MacOSX laptop with VMware guest OS image
-;; to mimic a server, whereby paths and other configuration details
-;; will necessarily differ.)
-;;
-;; e.g., production web servers will likely have everything under
-;; /home/www/, including slime and other Lisp libraries. 
-;; 
 
 
-(setenv "SBCL_HOME" "/usr/local/lib/sbcl")
+;;(setenv "SBCL_HOME" "/usr/local/lib/sbcl")
 
 ;; http://common-lisp.net/project/slime/doc/html/slime.html
-(add-to-list 'load-path "/home/www/lib/slime")
-(add-to-list 'load-path "/home/www/lib/slime/contrib")
+(add-to-list 'load-path "/usr/local/lisp/slime")
+(add-to-list 'load-path "/usr/local/lisp/slime/contrib")
+
 (setq inferior-lisp-program "/usr/local/bin/sbcl"
       ;; These really belong beneath /usr/share/doc/, but it's easier to keep all Lisp stuff together:
-      cltl2-url "file:///usr/share/doc/cltl/clm/node1.html"
-      hyperspec-path "/usr/share/doc/HyperSpec/"
-      hyperspec-prog "/home/www/lib/slime/hyperspec"
+      cltl2-url "file:///usr/local/lisp/cltl/clm/node1.html"
+      hyperspec-path "/usr/local/lisp/HyperSpec/"
+      hyperspec-prog "/usr/local/lisp/slime/hyperspec"
       w3m-command "/usr/bin/w3m")
 
 ;; ;; Remote FreeBSD,Linux,Solaris versus local MacOSX:

@@ -68,9 +68,6 @@
 			    (define-key java-mode-map "\n"   'newline-and-indent)
 			    (define-key java-mode-map "\C-c." 'bury-buffer)))
 
-(add-hook 'ruby-mode-hook '(lambda ()
-			    (define-key ruby-mode-map "\C-m" 'ruby-reindent-then-newline-and-indent)))
-
 (add-hook 'lisp-mode-hook '(lambda ()
 			    (define-key lisp-mode-map "\C-c%" 'fi:extract-list)
 			    (define-key lisp-mode-map "\C-m" 'newline-and-indent)))

@@ -8,11 +8,7 @@
 
 ;; Probably don't need this kruft since we have Quicklisp...
 ;; See also .asdf-install
-(let ((site-libraries
-       ;;#+darwin (merge-pathnames "lisp/")
-       #+darwin #P"/usr/local/lisp/"
-       #+(or freebsd linux) #P"/home/www/lib/"))
-
+(let ((site-libraries #P"/usr/local/lisp/"))
   (pushnew site-libraries asdf:*central-registry*)
 
   ;; ASDF-install is an add-on for everything other than SBCL:
@@ -29,8 +25,17 @@
     "Configures ASDF-INSTALL to use same paths that ASDF will search.
 Call this first: (require 'asdf-install)
 Then: (pushnew *site-local-asdf-install-locations* asdf-install:*locations* :test 'equal)")
-  (export '*site-local-asdf-install-locations*))
+  (export '*site-local-asdf-install-locations*)
 
+  ;;; added originally to bottom of file by ql:add-to-init-file:
+  #-quicklisp
+  (let ((quicklisp-init (merge-pathnames #P"quicklisp/setup.lisp"
+					 site-libraries)))
+    (when (probe-file quicklisp-init)
+      (load quicklisp-init))))
+
+;;(setf asdf::*system-cache* #P"/var/cache/common-lisp/"
+;;      asdf::*user-cache* asdf::*system-cache*)
 
 ;;; Yanked from http://www.cliki.net/asdf based upon
 ;;; http://www.sbcl.org/manual/Automatic-Recompilation-of-Stale-Fasls.html
@@ -48,12 +53,5 @@ Then: (pushnew *site-local-asdf-install-locations* asdf-install:*locations* :tes
      #-(or sbcl allegro lispworks cmu) error ()
      (asdf:perform (make-instance 'asdf:compile-op) c)
      (call-next-method))))
-
-
-;;; added originally by ql:add-to-init-file:
-#-quicklisp
-(let ((quicklisp-init #P"/usr/local/lisp/quicklisp/setup.lisp"))
-  (when (probe-file quicklisp-init)
-    (load quicklisp-init)))
 
 (declaim (optimize (debug 3) (safety 2) (speed 1) (space 0)))

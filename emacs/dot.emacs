@@ -29,6 +29,8 @@
 (load "keyboard") ; (define-key ...)
 
 (load (expand-file-name "/usr/local/lisp/quicklisp/slime-helper"))
+;;; Periodically, from run within Lisp: (progn (ql:update-client) (ql:update-all-dists))
+
 ;;(require 'slime)
 (slime-setup '(slime-repl		;excerpted from 'slime-fancy
 	       ;;slime-autodoc ;too gaudy, too distracting
@@ -46,18 +48,19 @@
 ;; w3m is optional, used by SLIME for HyperSpec; may use Firefox instead.
 ;; You may need to manually install emacs-w3m:
 ;; ./configure --with-emacs=/Applications/Emacs.app/Contents/MacOS/Emacs 
-;;(add-to-list 'load-path (expand-file-name "~/emacs/lisp/emacs-w3m"))
+(add-to-list 'load-path (expand-file-name "~/emacs/lisp/emacs-w3m"))
 (require 'w3m-load)
 ;;You may need to manually install: /Applications/Emacs.app/Contents/Resources/site-lisp/w3m/
 (load "w3m")
 
+;;;2013-07-31: use 'magit instead of 'git-emacs or 'git 
 ;;(setenv "PATH" (concat (getenv "PATH") ":/usr/local/git/bin"))
 ;; git clone git://github.com/tsgates/git-emacs.git
 ;;(require 'git-emacs)
-(require 'git)
-(defun git-call-process (buffer &rest args)
-  "Wrapper for call-process that sets environment strings."
-  (apply #'call-process "/usr/local/bin/git" nil buffer nil args))
+;; (require 'git)
+;; (defun git-call-process (buffer &rest args)
+;;   "Wrapper for call-process that sets environment strings."
+;;   (apply #'call-process "/usr/local/bin/git" nil buffer nil args))
 
 ;;(require 'go-mode-load)
 
