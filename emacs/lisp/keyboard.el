@@ -10,17 +10,19 @@
 ;;(global-unset-key "\C-[\C-[")    ; was just obnoxious in emacs-18
 (global-unset-key "\C-x\C-c")      ; kill-emacs; reset later for shell
 
-(global-set-key "\C-ch" 'help-command)	      ; was ^H (backspace)
 (global-set-key "\C-h" 'backward-delete-char) ; was beginning of help sequence
 
 ;; Miscellaneous new key mappings:
 (global-set-key "\C-c " 'set-mark-command)
 (global-set-key "\C-ci" 'insert-buffer)		; complements C-x i
 (global-set-key "\C-co" 'previous-other-window) ; Pez-ism: C-X o in reverse
-;;(define-key esc-map "\C-_" 'undo)               ; DELETE ME
 (global-set-key "\C-cu" 'undo) 
 (global-set-key "\C-c." 'bury-buffer) 
 (global-set-key "\C-c;" 'comment-region)
+
+;; reset font size by evaluating: (text-scale-adjust 0)
+(define-key esc-map "+" 'text-scale-increase)
+(define-key esc-map "-" 'text-scale-decrease)
 
 ;; Shell stuff:
 ;; (global-set-key "\C-xc" 'shell)      ; was relevent for emacs-19
