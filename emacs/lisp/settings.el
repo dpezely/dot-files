@@ -7,10 +7,9 @@
       display-time-day-and-date t
       sentence-end-double-space t
       version-control nil
-      trim-versions-without-asking t
-      auto-save-interval 400
-      truncate-partial-width-windows t)
-
+      truncate-partial-width-windows t
+      truncate-lines t
+      trim-versions-without-asking t)
 
 
 (setq today-visible-calendar-hook 'calendar-star-date
@@ -135,15 +134,24 @@
 			   ("=" org-code "<code>" "</code>" verbatim)
 			   ("~" org-verbatim "<code>" "</code>" verbatim))
       org-export-html-coding-system 'utf-8
-      org-export-html-style-extra "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
-	body {font-family:sans-serif}
-	a {text-decoration:none}
-	#table-of-contents {font-size:75%}
-	/*]]>*/--></style>"
-      org-export-html-validation-link nil
-      org-export-html-postamble nil
+      org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />"
+      ;; org-export-html-style-extra "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
+      ;; 	body {font-family:sans-serif}
+      ;; 	a {text-decoration:none}
+      ;; 	#table-of-contents {font-size:75%}
+      ;; 	/*]]>*/--></style>"
+      org-html-postamble nil
       org-export-copy-to-kill-ring nil)
 
+(add-hook 'org-present-mode-hook
+	  (lambda ()
+	    (org-present-big)
+	    (org-display-inline-images)))
+
+(add-hook 'org-present-mode-quit-hook
+	  (lambda ()
+	    (org-present-small)
+	    (org-remove-inline-images)))
 
 (add-hook 'text-mode-hook
 	  '(lambda () 
@@ -154,6 +162,8 @@
 	  '(lambda ()
 ;;	    (hide-ifdef-mode)
 ;;	    (setq tab-width 4)
+;;	    (c-set-style "linux")
+;;	    (c-set-style "bsd")
 	    (set-fill-column 79)
 	    (auto-fill-mode 1)))
 
@@ -186,4 +196,42 @@
 ;;(add-to-list 'auto-mode-alist '("\\.inc$" . perl-mode))
 
 (add-to-list 'completion-ignored-extensions ".swf") ; shockwave-flash
-;end
+(add-to-list 'completion-ignored-extensions ".beam") ; Erlang VM
+
+(add-hook 'erlang-mode-hook
+	  (lambda () 
+	    (setq indent-tabs-mode nil ;Play nice with non-Emacs heathens
+		  ;; Add paths to ../../*/deps/ebin for running & compiling:
+		  ;; (Restart *erlang* shell when new dependancies are added)
+		  inferior-erlang-machine-options
+		  (append (remove nil
+				  (mapcan (lambda (app-path)
+					    (let ((ebin (concat app-path "/ebin")))
+					      (when (file-readable-p ebin)
+						(list "-pa" ebin))))
+					  (directory-files "../.." t "[^.]$")))
+			  (remove nil
+				  (mapcan (lambda (dep)
+					    (let ((dep-path (concat dep "/deps")))
+					      (when (file-readable-p dep-path)
+						(mapcan (lambda (dir)
+							  (list "-pa" (concat dir "/ebin")))
+							(directory-files dep-path t "[^.]$")))))
+					  (directory-files "../.." t "[^.]$"))))
+		  erlang-compile-extra-opts
+		  (append (remove nil
+				  (mapcan (lambda (app-path)
+					    (let ((ebin (concat app-path "/ebin")))
+					      (when (file-readable-p ebin)
+						(list "-pa" ebin))))
+					  (directory-files "../.." t "[^.]$")))
+			  (remove nil
+				  (mapcan (lambda (dep)
+					    (let ((dep-path (concat dep "/deps")))
+					      (when (file-readable-p dep-path)
+						(mapcar (lambda (dir)
+							  (cons 'i (concat dir "/ebin")))
+							(directory-files dep-path t "[^.]$")))))
+					  (directory-files "../.." t "[^.]$")))))))
+
+(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
