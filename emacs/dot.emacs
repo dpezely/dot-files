@@ -28,30 +28,21 @@
 (load "utils")	  ; (defun ...)
 (load "keyboard") ; (define-key ...)
 
-(load (expand-file-name "/usr/local/lisp/quicklisp/slime-helper"))
-;;; Periodically, from run within Lisp: (progn (ql:update-client) (ql:update-all-dists))
-
-;;(require 'slime)
-(slime-setup '(slime-repl		;excerpted from 'slime-fancy
-	       ;;slime-autodoc ;too gaudy, too distracting
-	       slime-c-p-c
-	       slime-editing-commands
-	       slime-fancy-inspector
-	       slime-fuzzy
-	       slime-presentations
-	       slime-scratch
-	       slime-references
-	       slime-package-fu
-	       slime-fontifying-fu))
+;;(require 'slime) ; use QuickLisp's slime instead
+(load (expand-file-name "/usr/local/lisp/quicklisp/slime-helper.el"))
+(when (boundp 'slime-mode)
+  (slime-setup))
 ;; Then, when ready to work on your Lisp code, type: M-x slime
+;; Periodically, run from REPL: (progn (ql:update-client) (ql:update-all-dists))
 
+;;; eww replaces w3m as of Emacs 24.4.
 ;; w3m is optional, used by SLIME for HyperSpec; may use Firefox instead.
 ;; You may need to manually install emacs-w3m:
 ;; ./configure --with-emacs=/Applications/Emacs.app/Contents/MacOS/Emacs 
 (add-to-list 'load-path (expand-file-name "~/emacs/lisp/emacs-w3m"))
-(require 'w3m-load)
+;;(require 'w3m-load)
 ;;You may need to manually install: /Applications/Emacs.app/Contents/Resources/site-lisp/w3m/
-(load "w3m")
+;;(load "w3m")
 
 ;;;2013-07-31: use 'magit instead of 'git-emacs or 'git 
 ;;(setenv "PATH" (concat (getenv "PATH") ":/usr/local/git/bin"))
@@ -65,6 +56,7 @@
 ;;(require 'go-mode-load)
 
 (display-time)
+;;(display-battery-mode)
 
 (defun Home () 
   "Upon starting emacs, upon login-- execute this function.
@@ -77,6 +69,3 @@ Within .xinitrc, add: /usr/local/bin/emacs -f Home -f wide &"
   (unless (buffer-file-name)   ; because *Fancy Diary Entries* has no filename
     (split-window-with-another-buf "REMINDER"))
   (server-start)) ;then in .bashrc: export EDITOR=emacsclient
-
-(Home)
-(wide)
