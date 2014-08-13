@@ -121,27 +121,27 @@
 ;(swank:create-server :port 4005 :dont-close t)
 
 
-;;(setq org-export-with-toc nil) ;;Instead, use: #+OPTIONS: toc:nil 
-(setq org-export-author-info nil
-      org-export-email-info nil
-      org-export-time-stamp-file nil
-      org-export-headline-levels 2
-      org-use-sub-superscripts nil
-      org-emphasis-alist '(("*" bold "<b>" "</b>")
-			   ("/" italic "<em>" "</em>")
-			   ("_" underline 
-			    "<span style=\"text-decoration:underline;\">" "</span>")
-			   ("=" org-code "<code>" "</code>" verbatim)
-			   ("~" org-verbatim "<code>" "</code>" verbatim))
-      org-export-html-coding-system 'utf-8
-      org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />"
-      ;; org-export-html-style-extra "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
-      ;; 	body {font-family:sans-serif}
-      ;; 	a {text-decoration:none}
-      ;; 	#table-of-contents {font-size:75%}
-      ;; 	/*]]>*/--></style>"
-      org-html-postamble nil
-      org-export-copy-to-kill-ring nil)
+(add-hook 'org-mode-hook
+	  (lambda ()
+	    (setq org-export-author-info nil
+		  ;;rg-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
+		  org-export-email-info nil
+		  org-export-time-stamp-file nil
+		  org-export-headline-levels 2
+		  org-use-sub-superscripts nil
+		  org-emphasis-alist (delete-if (lambda (x)
+						  (equal (car x) "+"))
+						org-emphasis-alist)
+		  org-export-html-coding-system 'utf-8
+		  org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />"
+		  ;; org-export-html-style-extra
+		  ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
+		  ;; 	body {font-family:sans-serif}
+		  ;; 	a {text-decoration:none}
+		  ;; 	#table-of-contents {font-size:75%}
+		  ;; 	/*]]>*/--></style>"
+		  org-html-postamble nil
+		  org-export-copy-to-kill-ring nil)))
 
 (add-hook 'org-present-mode-hook
 	  (lambda ()
@@ -235,3 +235,8 @@
 					  (directory-files "../.." t "[^.]$")))))))
 
 (add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
+
+(add-hook 'markdown-mode-hook (lambda ()
+				(outline-minor-mode)
+				;; undo with M-x show-subtree or show-all:
+				(hide-sublevels 1)))
