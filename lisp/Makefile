@@ -1,6 +1,8 @@
 # Makefile - fetch & install SBCL, Quicklisp & SLIME
 
-all:
+all: help
+
+help:
 	@echo 'Usage: "make setup" or "make update"'
 
 update: quicklisp-update
@@ -16,7 +18,7 @@ CACHE_DIR=/var/cache
 
 SLIME_CACHE=${CACHE_DIR}/slime
 
-SBCL_VERSION=1.2.2
+SBCL_VERSION=1.3.1
 BASE_URL=http://sourceforge.net/projects/sbcl/files/sbcl/${SBCL_VERSION}
 ARCH=$(shell uname -s | perl -nwe 'tr/[A-Z]/[a-z]/; print')
 SBCL_BIN=sbcl-${SBCL_VERSION}-x86-64-${ARCH}-binary.tar.bz2
@@ -34,7 +36,7 @@ LIBRARIES="hunchentoot" "cl-utilities" "cl-ppcre" "fare-csv" "linedit"
 
 #FASL_DIR=~/.cache/common-lisp/sbcl-*/*/*/PROJECT-NAME
 
-test:
+urls:
 	@echo ${BASE_URL}/${SBCL_BIN}
 	@echo ${BASE_URL}/${SBCL_DOC}
 
@@ -42,6 +44,7 @@ sbcl: ${SBCL_BIN} ${SBCL_DOC}
 	tar jxf ${SBCL_BIN}
 	mv sbcl-${SBCL_VERSION}*-${ARCH} sbcl-${SBCL_VERSION}
 	tar jxf ${SBCL_DOC}
+	@echo "Running sudo to finish installation:"
 	(cd sbcl-${SBCL_VERSION}/ && sudo sh install.sh)
 	rm -rf sbcl-${SBCL_VERSION}
 
@@ -52,18 +55,30 @@ ${SBCL_BIN}:
 ${SBCL_DOC}:
 	[ -f ${SBCL_DOC} ] || wget ${BASE_URL}/${SBCL_DOC}
 
-quicklisp: ${LISP_LIB}/quicklisp.lisp
-
-${LISP_LIB}/quicklisp.lisp:
-	[ -d ${LISP_LIB}/quicklisp ] || sudo mkdir -p ${LISP_LIB}/quicklisp && sudo chown -R ${USER} ${LISP_LIB}
-	(cd ${LISP_LIB} && wget http://beta.quicklisp.org/quicklisp.lisp)
-	[ -f ${HOME}/quicklisp ] || ln -s ${LISP_LIB}/quicklisp ${HOME}/quicklisp
+quicklisp: ${LISP_LIB}/quicklisp ${HOME}/quicklisp ${LISP_LIB}/quicklisp.lisp
 	${SBCL} ${SPEED} --load ${LISP_LIB}/quicklisp.lisp --eval '(quicklisp-quickstart:install)' ${END}
 
-slime: slime-from-quicklisp
+${LISP_LIB}/quicklisp:
+	sudo mkdir -p ${LISP_LIB}/quicklisp
+	sudo chown -R ${USER} ${LISP_LIB}
+
+${HOME}/quicklisp:
+	ln -s ${LISP_LIB}/quicklisp ${HOME}/quicklisp
+
+${LISP_LIB}/quicklisp.lisp:
+	(cd ${LISP_LIB} && wget https://beta.quicklisp.org/quicklisp.lisp)
+	(cd ${LISP_LIB} && wget https://beta.quicklisp.org/quicklisp.lisp.asc)
+	(cd ${LISP_LIB} && wget https://beta.quicklisp.org/release-key.txt)
+	gpg --import ${LISP_LIB}/release-key.txt
+	gpg --verify ${LISP_LIB}/quicklisp.lisp.asc ${LISP_LIB}/quicklisp.lisp
+
+slime: slime-cache slime-from-quicklisp
+
+slime-cache: ${SLIME_CACHE}
+	sudo mkdir -p ${SLIME_CACHE}
+	sudo chown ${USER} ${SLIME_CACHE}
 
 slime-from-quicklisp: quicklisp
-	[ -d ${SLIME_CACHE} ] || sudo mkdir -p ${SLIME_CACHE} && sudo chown ${USER} ${SLIME_CACHE}
 	${SBCL} ${SPEED} --eval '(ql:quickload "quicklisp-slime-helper")' ${END}
 
 slime-from-git:
@@ -71,10 +86,12 @@ slime-from-git:
 	(cd ${LISP_LIB} && ln -s slime/swank.asd .)
 	${SBCL} --eval "(require 'swank)" ${END}
 
+deps:   library-dependencies
+
 depend: library-dependencies
 
 library-dependencies:
-	${SBCL} ${SPEED} --eval "(mapcar 'ql:quickload '(${LIBRARIES}))" ${END}
+	${SBCL} ${SPEED} --eval "(ql:quickload '(${LIBRARIES}))" ${END}
 
 quicklisp-update:
 	${SBCL} ${SPEED} --eval '(ql:update-dist "quicklisp")' ${END}
