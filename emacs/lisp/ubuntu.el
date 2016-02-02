@@ -14,24 +14,29 @@
   (setq x-select-enable-clipboard t
 	interprogram-paste-function 'x-cut-buffer-or-selection-value)
 
+  ;; To determine best font, start with the default by uncommenting
+  ;; any use of 'set-default-font, restart Emacs, and evaluate:
+  ;; (assoc 'font (frame-parameters))
+  ;; (/ (display-pixel-width) (display-mm-width) 1.0)
+  ;; monitor with 96dpi => 15pt font, 192dpi => 29pt font, 240dpi => 37pt font
+  ;; For Full HD on 13" laptop:
+  ;;(set-default-font "-unknown-DejaVu Sans Mono-normal-normal-normal-*-15-*-*-*-m-*-iso10646-1")
   ;;(set-default-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
   ;;(set-default-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
 
   (defun tall ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-position (selected-frame) 140 25)
-    (set-frame-height (selected-frame) 48)
+    (set-frame-position (selected-frame) 270 0)
+    (set-frame-height (selected-frame) 44)
     (set-frame-width (selected-frame) 100))
 
   (defun wide ()
     (interactive)
-    ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-position (selected-frame) 30 25)
-    (set-frame-height (selected-frame) 48)
-    (set-frame-width (selected-frame) 182))
-
-  (wide))
+    ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65x154
+    (set-frame-position (selected-frame) 90 0)
+    (set-frame-height (selected-frame) 54)
+    (set-frame-width (selected-frame) 185)))
 
 ;; The rationale for this config is for a Linux workstation to
 ;; essentially be functionally identical to a deployed server, with
