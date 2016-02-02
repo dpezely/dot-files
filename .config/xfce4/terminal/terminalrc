@@ -1,6 +1,7 @@
 [Configuration]
-BackgroundDarkness=0.900000
-FontName=Monospace 10
+ColorForeground=#000000
+ColorBackground=#ffffff
+FontName=DejaVu Sans Mono 11
 MiscAlwaysShowTabs=FALSE
 MiscBell=FALSE
 MiscBordersDefault=TRUE
@@ -8,7 +9,7 @@ MiscCursorBlinks=FALSE
 MiscCursorShape=TERMINAL_CURSOR_SHAPE_BLOCK
 MiscDefaultGeometry=100x24
 MiscInheritGeometry=FALSE
-MiscMenubarDefault=FALSE
+MiscMenubarDefault=TRUE
 MiscMouseAutohide=FALSE
 MiscToolbarDefault=FALSE
 MiscConfirmClose=TRUE
@@ -18,6 +19,7 @@ MiscTabCloseMiddleClick=TRUE
 MiscTabPosition=GTK_POS_TOP
 MiscHighlightUrls=TRUE
 MiscScrollAlternateScreen=TRUE
+ScrollingLines=100000
 ScrollingOnOutput=FALSE
 CommandLoginShell=TRUE
 
