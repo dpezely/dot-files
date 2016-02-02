@@ -1,8 +1,12 @@
+## .bashrc
+
+export LANG=en_CA.UTF-8
+export GDM_LANG=en_CA
+export LANGUAGE=en_CA
+
+umask 022
 
 PS1='\u@\h \W> '
-
-export EDITOR=emacsclient
-export PATH=/opt/local/bin:/opt/local/sbin:/sw/bin:/Local/bin:/usr/local/bin:/usr/local/git/bin:$PATH
 
 one_agent() {
     status=""
@@ -22,10 +26,24 @@ one_agent() {
 
 alias ls='ls -FC'
 
-#alias clisp='clisp -q -ansi'
 
-#export GIT_DIR=~/git
+case $OSTYPE in
+darwin*)
+	#prevent 'tar' from creating or using those annoying MacOSX metadata files: e.g., ._foo
+	export COPYFILE_DISABLE=1
+	export COPY_EXTENDED_ATTRIBUTES_DISABLE=1
+	PATH=${PATH}:/sw/bin:/Local/bin
+	;;
+*bsd)
+	;;
+linux*)
+	;;
+esac
 
-#prevent 'tar' from creating or using those annoying MacOSX metadata files: e.g., ._foo
-export COPYFILE_DISABLE=1
-export COPY_EXTENDED_ATTRIBUTES_DISABLE=1
+if [ -z "$EMACS" ]; then
+	export EDITOR=vi
+else
+	export EDITOR=emacsclient
+fi
+
+alias ssh_nohosts='ssh -o UserKnownHostsFile=/dev/null'
