@@ -184,3 +184,49 @@ argument ARG do it that many times."
     (delete-region (point) (mark t))
     (insert string)
     (backward-sexp 1)))
+
+(defun insert-matched-pair (opening closing &optional backwards)
+  "Insert matched pairs such as Begin End or { }, and place cursor in between"
+  (interactive)
+  (if (region-active-p)
+      (let ((start (point))
+	    (end (+ (mark t) (length opening) (length closing)))
+	    (string (buffer-substring (region-beginning) (region-end))))
+	(delete-region start (mark t))
+	(insert opening string closing)
+	(backward-char (or backwards 1))
+	(indent-region start end))
+      (let ((back-count (if backwards
+			    (- backwards (count-if (lambda (x)
+						     (= x 10)) ; \n
+						   (string-to-list closing)))
+			    1)))
+	(insert (replace-regexp-in-string "\n" "" opening)
+		(replace-regexp-in-string "\n" "" closing))
+	(backward-char back-count))))
+
+(defun mark-rust-statement ()
+  (interactive)
+  ;; FIXME: add parser; in presence of "{", skip to matching "}"
+  (let ((sentence-end "[;}]"))
+    (mark-end-of-sentence 1)))
+
+(defun insert-rust-parens ()
+  (interactive)
+  (insert-matched-pair "(" ")"))
+
+(defun insert-rust-curlies ()
+  (interactive)
+  (insert-matched-pair "{\n" "\n}\n" 3))
+
+(defun insert-rust-square-brackets ()
+  (interactive)
+  (insert-matched-pair "[" "]"))
+
+(defun insert-rust-angle-brackets ()
+  (interactive)
+  (insert-matched-pair "<" ">"))
+
+(defun insert-rust-block ()
+  (interactive)
+  (insert-matched-pair "|| {\n" "\n}\n" 3))

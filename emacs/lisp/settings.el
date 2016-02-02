@@ -3,12 +3,14 @@
 (setq inhibit-startup-message t
       initial-scratch-message nil
       default-major-mode 'text-mode
+      ispell-dictionary "british"	; no Canadian, eh?
       scroll-step 2
       display-time-day-and-date t
+      battery-mode-line-format "[%b%p%%]"
       sentence-end-double-space t
       version-control nil
-      truncate-partial-width-windows t
-      truncate-lines t
+      ;;truncate-partial-width-windows t
+      ;;truncate-lines t
       trim-versions-without-asking t)
 
 
@@ -23,6 +25,16 @@
 (if (< emacs-major-version 24)
     (add-hook 'diary-hook 'appt-make-list)
     (appt-activate 1))
+
+(setq holiday-local-holidays 
+      '((holiday-float 2 1 2 "Family Day - statutory") ; since 2013 in BC
+	(holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
+	(holiday-fixed 7 1 (format "Canada Day - %d years"
+			    (- (caddr (calendar-current-date)) 1867)))
+	(holiday-float 8 1 1 "August civic holiday - statutory")
+	(holiday-float 10 1 2 "Thanksgiving in Canada")
+	(holiday-fixed 11 11 "Rememberance Day")
+	(holiday-fixed 12 26 "Boxing Day")))
 
 ;; (setq Man-switches (concat "-M " 
 ;; 			   (let ((existing (getenv "MANPATH")))
@@ -198,6 +210,11 @@
 (add-to-list 'completion-ignored-extensions ".swf") ; shockwave-flash
 (add-to-list 'completion-ignored-extensions ".beam") ; Erlang VM
 
+(add-hook 'scheme-mode-hook '(lambda () 
+			      (setq font-lock-maximum-decoration t)
+			      (paren-toggle-matching-quoted-paren 1)
+			      (show-paren-mode t)))
+
 (add-hook 'erlang-mode-hook
 	  (lambda () 
 	    (setq indent-tabs-mode nil ;Play nice with non-Emacs heathens
@@ -236,7 +253,59 @@
 
 (add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
 
+(add-to-list 'auto-mode-alist '("\\.arc$" . arc-mode))
+
 (add-hook 'markdown-mode-hook (lambda ()
-				(outline-minor-mode)
+				;; Keep plain-text version readable
+				;; using conventional 80 column tty:
+				(visual-line-mode 0)
+				;; Enforce hard wrap so plain text is
+				;; readable in standard 80x24 terminal:
+				(auto-fill-mode)
+				;; Allow collapsing subtrees for easy nav:
+				;;(outline-minor-mode)
 				;; undo with M-x show-subtree or show-all:
-				(hide-sublevels 1)))
+				;;(hide-sublevels 1)
+				))
+
+(custom-set-faces
+ ;; use: M-x list-colors-display
+ '(markdown-header-face-1 ((t (:inherit markdown-header-face
+					:height 1.5
+					:underline t
+					:foreground "brown"))) t)
+ '(markdown-header-face-2 ((t (:inherit markdown-header-face
+					:height 1.3
+					:underline t
+					:foreground "blue"))) t)
+ '(markdown-header-face-3 ((t (:inherit markdown-header-face
+					:foreground "dark violet"))) t))
+
+;; (add-to-list 'elixir-mode-hook
+;; 	     '(lambda ()
+;; 	       (smartparens-mode)
+;; 	       ;; https://github.com/elixir-lang/emacs-elixir
+;; 	       ;; "Also, if you use smartparens you can piggyback on some of its
+;; 	       ;; functionality for dealing with Ruby's do .. end blocks. A sample
+;; 	       ;; configuration would be:"
+;; 	       (sp-with-modes '(elixir-mode)
+;; 		(sp-local-pair "fn" "end"
+;; 		 :when '(("SPC" "RET"))
+;; 		 :actions '(insert navigate))
+;; 		(sp-local-pair "do" "end"
+;; 		 :when '(("SPC" "RET"))
+;; 		 :post-handlers '(sp-ruby-def-post-handler)
+;; 		 :actions '(insert navigate))
+;; 		(sp-local-pair "case" "end"
+;; 		 :when '(("SPC" "RET"))
+;; 		 :post-handlers '(sp-ruby-def-post-handler)
+;; 		 :actions '(insert navigate)))))
+
+;; (add-to-list 'elixir-mode-hook
+;; 	     (defun auto-activate-ruby-end-mode-for-elixir-mode ()
+;; 	       (set (make-variable-buffer-local 'ruby-end-expand-keywords-before-re)
+;; 		    "\\(?:^\\|\\s-+\\)\\(?:do\\)")
+;; 	       (set (make-variable-buffer-local 'ruby-end-check-statement-modifiers) nil)
+;; 	       ;;FIXME: requiring 'ruby-mode doesn't resolve warning: Can't Find...
+;; 	       ;;(ruby-end-mode +1)
+;; 	       ))

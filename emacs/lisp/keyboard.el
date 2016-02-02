@@ -47,36 +47,61 @@
 (global-set-key "\C-x2" 'split-window-with-another-buf) ;was 'split-window-vertically
 (global-set-key "\C-x3" 'split-window-horiz-with-another-buf) ;was 'split-window-horizontally
 
-(add-hook 'shell-mode-hook '(lambda () 
-			     (define-key shell-mode-map "\C-c." 'bury-buffer)))
+(add-hook 'shell-mode-hook
+	  '(lambda () 
+	    (define-key shell-mode-map "\C-c." 'bury-buffer)))
 
-(add-hook 'org-mode-hook '(lambda () 
-			   (define-key org-mode-map "\C-c\C-a" 'show-all)
-			   (define-key org-mode-map "\C-e" 'move-end-of-line)
-			   (define-key org-mode-map "\C-c." 'bury-buffer)))
+(add-hook 'org-mode-hook
+	  '(lambda () 
+	    (define-key org-mode-map "\C-c\C-a" 'show-all)
+	    (define-key org-mode-map "\C-e" 'move-end-of-line)
+	    (define-key org-mode-map "\C-c." 'bury-buffer)))
 
-(add-hook 'c-mode-hook '(lambda ()
-			 (define-key c-mode-map    "\C-m" 'newline-and-indent)
-			 (define-key c-mode-map    "\n"   'newline-and-indent)
-			 (define-key c-mode-map    "\C-c." 'bury-buffer)))
+(add-hook 'c-mode-hook
+	  '(lambda ()
+	    (define-key c-mode-map    "\C-m" 'newline-and-indent)
+	    (define-key c-mode-map    "\n"   'newline-and-indent)
+	    (define-key c-mode-map    "\C-c." 'bury-buffer)))
 
-(add-hook 'c++-mode-hook '(lambda () 
-			   (define-key c++-mode-map  "\C-m" 'newline-and-indent)
-			   (define-key c++-mode-map  "\n"   'newline-and-indent)
-			   (define-key c++-mode-map  "\C-c." 'bury-buffer)))
+(add-hook 'c++-mode-hook
+	  '(lambda () 
+	    (define-key c++-mode-map  "\C-m" 'newline-and-indent)
+	    (define-key c++-mode-map  "\n"   'newline-and-indent)
+	    (define-key c++-mode-map  "\C-c." 'bury-buffer)))
 
-(add-hook 'java-mode-hook '(lambda ()
-			    (define-key java-mode-map "\C-m" 'newline-and-indent)
-			    (define-key java-mode-map "\n"   'newline-and-indent)
-			    (define-key java-mode-map "\C-c." 'bury-buffer)))
+(add-hook 'lisp-mode-hook
+	  '(lambda ()
+	    (define-key lisp-mode-map "\C-c%" 'fi:extract-list)
+	    (define-key lisp-mode-map "\C-m" 'newline-and-indent)))
 
-(add-hook 'lisp-mode-hook '(lambda ()
-			    (define-key lisp-mode-map "\C-c%" 'fi:extract-list)
-			    (define-key lisp-mode-map "\C-m" 'newline-and-indent)))
+(add-hook 'scheme-mode-hook
+	  '(lambda ()
+	    (define-key scheme-mode-map "\C-c%" 'fi:extract-list)
+	    (define-key scheme-mode-map "\C-m" 'newline-and-indent)))
 
-(add-hook 'html-mode-hook '(lambda ()
-			    (define-key html-mode-map "\C-m" 'newline-and-indent)))
+(add-hook 'arc-mode-hook
+	  '(lambda ()
+	    (define-key arc-mode-map "\C-c%" 'fi:extract-list)))
 
-(add-hook 'w3m-mode-hook '(lambda ()
-			   (define-key esc-map "[" 'top-of-window) 
-			   (define-key esc-map "]" 'bottom-of-window)))
+(add-hook 'elixir-mode-hook
+	  '(lambda ()
+	    (define-key elixir-mode-map "\C-c\C-d" 'elixir-mode-open-docs-stable)
+	    (define-key elixir-mode-map "\C-c\C-z" 'alchemist-iex-run)))
+
+(add-hook 'html-mode-hook
+	  '(lambda ()
+	    (define-key html-mode-map "\C-m" 'newline-and-indent)))
+
+(add-hook 'w3m-mode-hook
+	  '(lambda ()
+	    (define-key w3m-mode-map "\M-[" 'top-of-window) 
+	    (define-key w3m-mode-map "\M-]" 'bottom-of-window)))
+
+(add-hook 'rust-mode-hook
+	  '(lambda ()
+	    (define-key rust-mode-map (kbd "C-M-;") 'mark-rust-statement)
+	    (define-key rust-mode-map (kbd "s-(") 'insert-rust-parens)
+	    (define-key rust-mode-map (kbd "s-{") 'insert-rust-curlies)
+	    (define-key rust-mode-map (kbd "s-[") 'insert-rust-square-brackets)
+	    (define-key rust-mode-map (kbd "s-<") 'insert-rust-angle-brackets)
+	    (define-key rust-mode-map (kbd "s-|") 'insert-rust-block)))
