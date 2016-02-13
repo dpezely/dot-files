@@ -94,7 +94,7 @@
 Within .xinitrc, add: /usr/local/bin/emacs -f Home -f wide &"
   (interactive)
   (find-file "~/etc/REMINDER")
-  (diary 0)
+  (diary)
   (calendar)
   (other-window 1)
   (unless (buffer-file-name)   ; because *Fancy Diary Entries* has no filename

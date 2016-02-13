@@ -1,32 +1,18 @@
 ;; settings.el
 
-(setq inhibit-startup-message t
+(setq inhibit-startup-screen t
       initial-scratch-message nil
-      default-major-mode 'text-mode
       ispell-dictionary "british"	; no Canadian, eh?
       scroll-step 2
       display-time-day-and-date t
       battery-mode-line-format "[%b%p%%]"
       sentence-end-double-space t
-      version-control nil
       ;;truncate-partial-width-windows t
       ;;truncate-lines t
-      trim-versions-without-asking t)
+      version-control nil
+      delete-old-versions t)
 
-
-(setq today-visible-calendar-hook 'calendar-star-date
-      diary-display-hook 'fancy-diary-display
-      list-diary-entries-hook 'include-other-diary-files
-      view-diary-entries-initially t
-      number-of-diary-entries 5
-      european-calendar-style t
-      diary-file (expand-file-name "~/etc/SCHEDULE"))
-;; Have diary mode notify me of any appointments.
-(if (< emacs-major-version 24)
-    (add-hook 'diary-hook 'appt-make-list)
-    (appt-activate 1))
-
-(setq holiday-local-holidays 
+(setq holiday-other-holidays
       '((holiday-float 2 1 2 "Family Day - statutory") ; since 2013 in BC
 	(holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
 	(holiday-fixed 7 1 (format "Canada Day - %d years"
@@ -34,7 +20,30 @@
 	(holiday-float 8 1 1 "August civic holiday - statutory")
 	(holiday-float 10 1 2 "Thanksgiving in Canada")
 	(holiday-fixed 11 11 "Rememberance Day")
-	(holiday-fixed 12 26 "Boxing Day")))
+	(delete nil (mapcar (lambda (x)
+			      (let ((status (caddr x)))
+				(cond
+				  ((eq status 0)
+				   (list (car x) (concat "New moon " (cadr x))))
+				  ((eq status 2)
+				   (list (car x) (concat "Full moon " (cadr x)))))))
+		     (lunar-phase-list displayed-month displayed-year))))
+      calendar-today-visible-hook 'calendar-star-date
+      calendar-view-diary-initially-flag t
+      diary-display-function 'diary-fancy-display
+      diary-list-entries-hook 'diary-include-other-diary-files
+      diary-number-of-entries 5
+      diary-file (expand-file-name "~/etc/SCHEDULE"))
+
+;; Have diary mode notify me of any appointments:
+(if (< emacs-major-version 24)
+    (add-hook 'diary-hook 'appt-make-list)
+    (appt-activate 1))
+
+(calendar-set-date-style 'european)
+
+(add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
+(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 
 ;; (setq Man-switches (concat "-M " 
 ;; 			   (let ((existing (getenv "MANPATH")))
@@ -47,22 +56,21 @@
 (add-hook 'comint-mode-hook 
 	  '(lambda () 
 	    (line-number-mode 1)
+	    (setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
 	    (setq comint-output-filter-functions (list
 						  'comint-watch-for-password-prompt
 						  'comint-postoutput-scroll-to-bottom))))
 
-(setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
-
 ;; set up unicode
 (set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
-(setenv "LANG" "en_US.UTF-8")		;for external programs; e.g., SBCL
+(setenv "LANG" "en_CA.UTF-8")		;for external programs; e.g., SBCL
 
 (prefer-coding-system       'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
-(setq default-buffer-file-coding-system 'utf-8)
+(setq buffer-file-coding-system 'utf-8)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 
 
