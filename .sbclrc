@@ -6,36 +6,7 @@
 
 (require 'asdf)
 
-;; Probably don't need this kruft since we have Quicklisp...
-;; See also .asdf-install
-(let ((site-libraries #P"/usr/local/lisp/"))
-  (pushnew site-libraries asdf:*central-registry*)
-
-  ;; ASDF-install is an add-on for everything other than SBCL:
-  #+ccl (pushnew #P"/usr/local/ccl/tools/asdf-install/" asdf:*central-registry*)
-
-  (dolist (path (list ;;add your personal paths in this list ...
-		 (merge-pathnames "systems/" site-libraries)))
-    (pushnew (merge-pathnames path site-libraries) asdf:*central-registry* :test #'equal))
-
-  (defvar *site-local-asdf-install-locations*
-    (list (merge-pathnames "source/"  site-libraries)
-	  (merge-pathnames "systems/" site-libraries)
-	  "local site install")
-    "Configures ASDF-INSTALL to use same paths that ASDF will search.
-Call this first: (require 'asdf-install)
-Then: (pushnew *site-local-asdf-install-locations* asdf-install:*locations* :test 'equal)")
-  (export '*site-local-asdf-install-locations*)
-
-  ;;; added originally to bottom of file by ql:add-to-init-file:
-  #-quicklisp
-  (let ((quicklisp-init (merge-pathnames #P"quicklisp/setup.lisp"
-					 site-libraries)))
-    (when (probe-file quicklisp-init)
-      (load quicklisp-init))))
-
-;;(setf asdf::*system-cache* #P"/var/cache/common-lisp/"
-;;      asdf::*user-cache* asdf::*system-cache*)
+(declaim (optimize (debug 3) (safety 2) (speed 1) (space 0)))
 
 ;;; Yanked from http://www.cliki.net/asdf based upon
 ;;; http://www.sbcl.org/manual/Automatic-Recompilation-of-Stale-Fasls.html
@@ -54,4 +25,22 @@ Then: (pushnew *site-local-asdf-install-locations* asdf-install:*locations* :tes
      (asdf:perform (make-instance 'asdf:compile-op) c)
      (call-next-method))))
 
-(declaim (optimize (debug 3) (safety 2) (speed 1) (space 0)))
+;; Get ~/lisp/ if it exists:
+(let ((dir (probe-file (merge-pathnames "lisp" (user-homedir-pathname)))))
+  (when dir
+    (push dir asdf:*central-registry*)))
+
+;; Get ./src/ if it exists, such as when working a project in its own subdirectory:
+(let ((dir (probe-file (merge-pathnames "src"))))
+  (when dir
+    (push dir asdf:*central-registry*)))
+
+;; Push current working directory last, so it's accessed first:
+(push *default-pathname-defaults* asdf:*central-registry*)
+
+;;; added originally to bottom of file by ql:add-to-init-file:
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames #P"quicklisp/setup.lisp"
+				       (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
