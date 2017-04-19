@@ -2,7 +2,7 @@
 
 (setq inhibit-startup-screen t
       initial-scratch-message nil
-      ispell-dictionary "british"	; no Canadian, eh?
+      ispell-dictionary "en_CA"
       scroll-step 2
       display-time-day-and-date t
       battery-mode-line-format "[%b%p%%]"
@@ -15,19 +15,11 @@
 (setq holiday-other-holidays
       '((holiday-float 2 1 2 "Family Day - statutory") ; since 2013 in BC
 	(holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
-	(holiday-fixed 7 1 (format "Canada Day - %d years"
-			    (- (caddr (calendar-current-date)) 1867)))
-	(holiday-float 8 1 1 "August civic holiday - statutory")
+	(holiday-fixed 7 1 "Canada Day")
+	(holiday-float 8 1 1 "BC Day")
+	(holiday-float 9 1 1 "Labour Day")
 	(holiday-float 10 1 2 "Thanksgiving in Canada")
-	(holiday-fixed 11 11 "Rememberance Day")
-	(delete nil (mapcar (lambda (x)
-			      (let ((status (caddr x)))
-				(cond
-				  ((eq status 0)
-				   (list (car x) (concat "New moon " (cadr x))))
-				  ((eq status 2)
-				   (list (car x) (concat "Full moon " (cadr x)))))))
-		     (lunar-phase-list displayed-month displayed-year))))
+	(holiday-fixed 11 11 "Rememberance Day"))
       calendar-today-visible-hook 'calendar-star-date
       calendar-view-diary-initially-flag t
       diary-display-function 'diary-fancy-display
@@ -52,7 +44,7 @@
 ;; 			   "/usr/man:/usr/local/share/man:/usr/local/git/man"))
 
 
-;; Used for Shell and SSH:
+;; Used for Shell and SSH: (or manually use M-x send-invisible)
 (add-hook 'comint-mode-hook 
 	  '(lambda () 
 	    (line-number-mode 1)
@@ -279,15 +271,15 @@
 (custom-set-faces
  ;; use: M-x list-colors-display
  '(markdown-header-face-1 ((t (:inherit markdown-header-face
-					:height 1.5
+					;;:height 1.5
 					:underline t
 					:foreground "brown"))) t)
  '(markdown-header-face-2 ((t (:inherit markdown-header-face
-					:height 1.3
+					;;:height 1.3
 					:underline t
-					:foreground "blue"))) t)
+					:foreground "orange"))) t)
  '(markdown-header-face-3 ((t (:inherit markdown-header-face
-					:foreground "dark violet"))) t))
+					:foreground "gold"))) t))
 
 ;; (add-to-list 'elixir-mode-hook
 ;; 	     '(lambda ()
