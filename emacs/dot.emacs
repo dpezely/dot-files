@@ -1,5 +1,7 @@
 ;;;; .emacs						-*- emacs-lisp -*-
 
+;; When debugging on new versions, remember to start here: (view-emacs-news)
+
 (add-to-list 'load-path (expand-file-name "~/emacs/lisp"))
 
 (cond ((eq window-system 'ns)		; Cocoa aka NextStep
@@ -17,7 +19,7 @@
        ;; http://common-lisp.net/project/slime/doc/html/slime.html
        (add-to-list 'load-path "/usr/local/lisp/slime")
        (add-to-list 'load-path "/usr/local/lisp/slime/contrib")
-       (setq inferior-lisp-program "/usr/local/bin/sbcl"
+       (setq inferior-lisp-program "/usr/local/bin/sbcl --noinform"
 	     hyperspec-prog "/usr/local/slime/hyperspec"
 	     hyperspec-path "/usr/share/doc/HyperSpec/"
 	     cltl2-url "file:///usr/share/doc/cltl/clm/node1.html"
@@ -26,14 +28,49 @@
 ;; Sample instructions for new package installer:
 ;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
 (require 'package)
+(require 'cl)
+
+;; http://ergoemacs.org/emacs/emacs_package_system.html
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-;; M-x package-refresh-contents
+
+(custom-set-variables
+ '(package-selected-packages
+   (quote (pkg-info let-alist
+	   markdown-mode markdown-mode+
+	   smartparens seq
+	   rust-mode rust-playground cargo
+	   racer ;rust-racer ;;for M-.
+	   company ;;for TAB key word completion, used by racer
+	   ;; flycheck flycheck-rust flymake-rust
+	   w3m
+	   ;; React:
+	   web-mode js2-mode json-mode))))
+
+;; FIXME: might not be needed, especially as of Emacs 25
+(defun Install-Local-Packages ()
+  "Typically only run once after OS installation or upgrading Emacs"
+  (interactive)
+  (package-initialize)
+  (package-refresh-contents)
+  (dolist (pkg package-selected-packages)
+    (package-install pkg)))
 
 ;; Divisions that made sense in 1989 may seem confusing in 2009:
-(load "settings") ; (setq ...)
-(load "utils")	  ; (defun ...)
-(load "keyboard") ; (define-key ...)
+(load "settings")
+(load "utils")
+(load "keyboard")
+
+(load "markdown-to-html5")
+(load "storyteller")
+
+(setq holiday-other-holidays
+      '((holiday-float 2 1 3 "Family Day - statutory") ; since 2013 in BC, moved for 2019
+	(holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
+	(holiday-fixed 7 1 "Canada Day")
+	(holiday-float 8 1 1 "BC Day")
+	(holiday-float 9 1 1 "Labour Day")
+	(holiday-float 10 1 2 "Thanksgiving in Canada")
+	(holiday-fixed 11 11 "Rememberance Day")))
 
 ;;(require 'slime) ; use QuickLisp's slime instead
 (load "/usr/local/lisp/quicklisp/slime-helper.el")
@@ -50,7 +87,7 @@
 ;;(require 'w3m-load)
 ;;You may need to manually install: /Applications/Emacs.app/Contents/Resources/site-lisp/w3m/
 ;; (package-install "w3m")
-(load "w3m")
+;;(load "w3m")
 
 ;;;2013-07-31: use 'magit instead of 'git-emacs or 'git 
 ;;(setenv "PATH" (concat (getenv "PATH") ":/usr/local/git/bin"))
@@ -64,27 +101,14 @@
 
 ;;(require 'arc)				; arclanguage.org, extras/arc.el
 ;;(require 'rust-mode)
+;;(require 'erlang)
 
-;; (when (and (>= emacs-major-version 24) (>= emacs-minor-version 4))
-;;   ;; ;; (progn (package-install "emacs-elixir") (package-install "alchemist"))
-;;   ;; (add-to-list 'load-path "~/.emacs.d/elpha/elixir-mode")
-;;   ;; (add-to-list 'load-path "~/.emacs.d/elpha/alchemist.el")
-;;   ;; ;;(add-to-list 'load-path "~/.emacs.d/smartparens")
-;;   (setq elixir-mode--website-url "http://elixir-lang.org"
-;; 	alchemist-help-ansi-color-docs nil) ; IEx.configure(colors: [enabled: false])
-;;   ;;(require 'dash)
-;;   (require 'alchemist)
-;;   (require 'elixir-mode)
-;;   (require 'smartparens)
-;;   (require 'smartparens-ruby)
-;;   ;; FIXME: uncomment if SP enabled in any other buffer or mode
-;;   ;;(smartparens-global-mode nil)
-;;   )
+;; Added for React but maybe benefits other languages too:
+;;(require 'flycheck)
+;;;;(add-hook 'after-init-hook #'global-flycheck-mode)
 
 ;;(add-to-list 'load-path "~/.emacs.d/org-present")
 ;;(require 'org-present)
-
-
 
 (display-time)
 (display-battery-mode)
