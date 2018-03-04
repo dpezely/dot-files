@@ -48,12 +48,12 @@
 (global-set-key "\C-x3" 'split-window-horiz-with-another-buf) ;was 'split-window-horizontally
 
 (add-hook 'shell-mode-hook
-	  '(lambda () 
+	  '(lambda ()
 	    (define-key shell-mode-map "\C-c." 'bury-buffer)))
 
 (add-hook 'org-mode-hook
-	  '(lambda () 
-	    (define-key org-mode-map "\C-c\C-a" 'show-all)
+	  '(lambda ()
+	    (define-key org-mode-map "\C-c\C-a" 'outline-show-all)
 	    (define-key org-mode-map "\C-e" 'move-end-of-line)
 	    (define-key org-mode-map "\C-c." 'bury-buffer)))
 
@@ -63,11 +63,10 @@
 	    (define-key c-mode-map    "\n"   'newline-and-indent)
 	    (define-key c-mode-map    "\C-c." 'bury-buffer)))
 
-(add-hook 'c++-mode-hook
-	  '(lambda () 
-	    (define-key c++-mode-map  "\C-m" 'newline-and-indent)
-	    (define-key c++-mode-map  "\n"   'newline-and-indent)
-	    (define-key c++-mode-map  "\C-c." 'bury-buffer)))
+(add-hook 'c++mode-hook '(lambda ()
+			  (define-key c++-mode-map  "\C-m" 'newline-and-indent)
+			  (define-key c++-mode-map  "\n"   'newline-and-indent)
+			  (define-key c++-mode-map  "\C-c." 'bury-buffer)))
 
 (add-hook 'lisp-mode-hook
 	  '(lambda ()
@@ -92,16 +91,15 @@
 	  '(lambda ()
 	    (define-key html-mode-map "\C-m" 'newline-and-indent)))
 
-(add-hook 'w3m-mode-hook
+(add-hook 'w3-mode-hook
 	  '(lambda ()
 	    (define-key w3m-mode-map "\M-[" 'top-of-window) 
 	    (define-key w3m-mode-map "\M-]" 'bottom-of-window)))
 
 (add-hook 'rust-mode-hook
 	  '(lambda ()
-	    (define-key rust-mode-map (kbd "C-M-;") 'mark-rust-statement)
-	    (define-key rust-mode-map (kbd "s-(") 'insert-rust-parens)
-	    (define-key rust-mode-map (kbd "s-{") 'insert-rust-curlies)
-	    (define-key rust-mode-map (kbd "s-[") 'insert-rust-square-brackets)
-	    (define-key rust-mode-map (kbd "s-<") 'insert-rust-angle-brackets)
-	    (define-key rust-mode-map (kbd "s-|") 'insert-rust-block)))
+	    ;;(define-key rust-mode-map [(tab)] 'company-indent-or-complete-common)
+	    (define-key rust-mode-map (kbd "C-c C-c t") 'cargo-process-build-backtrace)
+	    (define-key rust-mode-map (kbd "C-c C-c T") 'cargo-process-build-full-backtrace)
+	    (define-key rust-mode-map (kbd "C-c C-c c") 'cargo-process-build-with-clippy)
+	    (define-key rust-mode-map (kbd "C-M-;") 'mark-rust-statement)))
