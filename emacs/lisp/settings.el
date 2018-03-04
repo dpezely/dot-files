@@ -9,18 +9,14 @@
       sentence-end-double-space t
       ;;truncate-partial-width-windows t
       ;;truncate-lines t
+      pop-up-windows nil
+      pop-up-frames nil
+      same-window-buffer-names '("*shell*" "*slime-scratch*" "*xref*")
+      same-window-regexps '("^\*sldb sbcl/")
       version-control nil
       delete-old-versions t)
 
-(setq holiday-other-holidays
-      '((holiday-float 2 1 2 "Family Day - statutory") ; since 2013 in BC
-	(holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
-	(holiday-fixed 7 1 "Canada Day")
-	(holiday-float 8 1 1 "BC Day")
-	(holiday-float 9 1 1 "Labour Day")
-	(holiday-float 10 1 2 "Thanksgiving in Canada")
-	(holiday-fixed 11 11 "Rememberance Day"))
-      calendar-today-visible-hook 'calendar-star-date
+(setq calendar-today-visible-hook 'calendar-star-date
       calendar-view-diary-initially-flag t
       diary-display-function 'diary-fancy-display
       diary-list-entries-hook 'diary-include-other-diary-files
@@ -46,16 +42,18 @@
 
 ;; Used for Shell and SSH: (or manually use M-x send-invisible)
 (add-hook 'comint-mode-hook 
-	  '(lambda () 
-	    (line-number-mode 1)
-	    (setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
-	    (setq comint-output-filter-functions (list
-						  'comint-watch-for-password-prompt
-						  'comint-postoutput-scroll-to-bottom))))
+	  #'(lambda () 
+	      (line-number-mode 1)
+	      (setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
+	      (setq comint-output-filter-functions '(comint-watch-for-password-prompt
+						     comint-postoutput-scroll-to-bottom))))
 
 ;; set up unicode
 (set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
-(setenv "LANG" "en_CA.UTF-8")		;for external programs; e.g., SBCL
+(unless (getenv "LANG")
+  (setenv "LANG"     "en_CA.UTF-8"))	;for external programs; e.g., SBCL
+(unless (getenv "LC_CTYPE")
+  (setenv "LC_CTYPE" "en_CA.UTF-8"))
 
 (prefer-coding-system       'utf-8)
 (set-default-coding-systems 'utf-8)
@@ -77,8 +75,9 @@
       ;; w3m-command "/usr/local/bin/w3m"
       common-lisp-hyperspec-root (concat "file://" hyperspec-path)
       common-lisp-hyperspec-symbol-table (concat hyperspec-path "Data/Map_Sym.txt")
-      ;;See http://www.emacswiki.org/cgi-bin/emacs-en/emacs-w3m
-      browse-url-browser-function 'w3m
+
+      ;;See http://www.emacswiki.org/emacs/emacs-w3m
+      ;; browse-url-browser-function 'w3m
       w3m-home-page cltl2-url
       w3m-symbol 'w3m-default-symbol
       w3m-key-binding 'info
@@ -87,7 +86,8 @@
       w3m-file-coding-system 'utf-8
       w3m-file-name-coding-system 'utf-8
       w3m-terminal-coding-system 'utf-8
-      ;;slime-net-coding-system 'utf-8-unix
+
+      slime-net-coding-system 'utf-8-unix
       paren-priority 'close
       paren-match-face 'bold
       paren-sexp-mode t)
@@ -97,13 +97,18 @@
 (require 'mic-paren)
 (paren-activate)
 
-(add-hook 'lisp-mode-hook '(lambda () 
-			    (setq font-lock-maximum-decoration t)
-			    (paren-toggle-matching-quoted-paren 1)
-			    (show-paren-mode t)))
+;;(add-to-list 'slime-contribs 'slime-cl-indent)
+(add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
+
+(add-hook 'lisp-mode-hook #'(lambda () 
+			      (setq lisp-indent-function 'common-lisp-indent-function
+				    ;;common-lisp-style "sbcl"
+				    font-lock-maximum-decoration t)
+			      (paren-toggle-matching-quoted-paren 1)
+			      (show-paren-mode t)))
 
 ;;http://mumble.net/~campbell/emacs/paredit.html
-;(add-hook 'lisp-mode-hook '(lambda () (paredit-mode 1)))
+;(add-hook 'lisp-mode-hook #'(lambda () (paredit-mode 1)))
 
 ;(font-lock-add-keywords 
 ; 'lisp-mode
@@ -166,33 +171,52 @@
 	    (org-remove-inline-images)))
 
 (add-hook 'text-mode-hook
-	  '(lambda () 
-	    (set-fill-column 76) 
-	    (visual-line-mode nil)))
+	  #'(lambda () 
+	      (set-fill-column 76) 
+	      (visual-line-mode nil)))
 
 (add-hook 'c-mode-common-hook
-	  '(lambda ()
-;;	    (hide-ifdef-mode)
-;;	    (setq tab-width 4)
-;;	    (c-set-style "linux")
-;;	    (c-set-style "bsd")
-	    (set-fill-column 79)
-	    (auto-fill-mode 1)))
+	  #'(lambda ()
+	      ;;(hide-ifdef-mode)
+	      ;;(setq tab-width 4)
+	      ;;(c-set-style "linux")
+	      ;;(c-set-style "bsd")
+	      (set-fill-column 79)
+	      (auto-fill-mode 1)))
+
+;; Use eslint instead for ECMAScript 2015 but flycheck for everything else
+;; http://www.flycheck.org/en/manual/latest/index.html
+;;(setq flycheck-disabled-checkers '(javascript-jshint json-jsonlist)
+;;      flycheck-temp-prefix ".flycheck")
+
+;; use eslint with web-mode for jsx files
+;;(flycheck-add-mode 'javascript-eslint 'web-mode)
+
+(add-hook 'web-mode-hook
+	  #'(lambda ()
+	      ;;(flycheck-mode)
+	      ;; See web-mode.org
+	      (setq web-mode-markup-indent-offset 2
+		    web-mode-css-indent-offset 2
+		    web-mode-code-indent-offset 2)
+	      (defadvice web-mode-highlight-part (around tweak-jsx activate)
+		(if (equal web-mode-content-type "jsx")
+		    (let ((web-mode-enable-part-face nil))
+		      ad-do-it)
+		    ad-do-it))))
 
 (add-hook 'javascript-mode-hook
-	  '(lambda ()
-;;	    (setq tab-width 4)
-	    (set-fill-column 79)
-	    (auto-fill-mode 1)))
+	  #'(lambda ()
+	      ;;(setq tab-width 4)
+	      (set-fill-column 79)
+	      (auto-fill-mode 1)))
 
 (add-hook 'go-mode-hook
-	  '(lambda ()
-;;	    (setq tab-width 4)
-	    (add-hook 'before-save-hook #'gofmt-before-save)))
+	  #'(lambda ()
+	      ;;(setq tab-width 4)
+	      (add-hook 'before-save-hook #'gofmt-before-save)))
 
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-
-(add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Load ruby-mode")
 ;;(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
@@ -207,53 +231,54 @@
 ;;(add-to-list 'auto-mode-alist '("\\.php$" . perl-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.inc$" . perl-mode))
 
+(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.arc$" . arc-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+
+
 (add-to-list 'completion-ignored-extensions ".swf") ; shockwave-flash
 (add-to-list 'completion-ignored-extensions ".beam") ; Erlang VM
 
-(add-hook 'scheme-mode-hook '(lambda () 
-			      (setq font-lock-maximum-decoration t)
-			      (paren-toggle-matching-quoted-paren 1)
-			      (show-paren-mode t)))
+(add-hook 'scheme-mode-hook #'(lambda () 
+				(setq font-lock-maximum-decoration t)
+				(paren-toggle-matching-quoted-paren 1)
+				(show-paren-mode t)))
 
 (add-hook 'erlang-mode-hook
-	  (lambda () 
-	    (setq indent-tabs-mode nil ;Play nice with non-Emacs heathens
-		  ;; Add paths to ../../*/deps/ebin for running & compiling:
-		  ;; (Restart *erlang* shell when new dependancies are added)
-		  inferior-erlang-machine-options
-		  (append (remove nil
-				  (mapcan (lambda (app-path)
-					    (let ((ebin (concat app-path "/ebin")))
-					      (when (file-readable-p ebin)
-						(list "-pa" ebin))))
-					  (directory-files "../.." t "[^.]$")))
-			  (remove nil
-				  (mapcan (lambda (dep)
-					    (let ((dep-path (concat dep "/deps")))
-					      (when (file-readable-p dep-path)
-						(mapcan (lambda (dir)
-							  (list "-pa" (concat dir "/ebin")))
-							(directory-files dep-path t "[^.]$")))))
-					  (directory-files "../.." t "[^.]$"))))
-		  erlang-compile-extra-opts
-		  (append (remove nil
-				  (mapcan (lambda (app-path)
-					    (let ((ebin (concat app-path "/ebin")))
-					      (when (file-readable-p ebin)
-						(list "-pa" ebin))))
-					  (directory-files "../.." t "[^.]$")))
-			  (remove nil
-				  (mapcan (lambda (dep)
-					    (let ((dep-path (concat dep "/deps")))
-					      (when (file-readable-p dep-path)
-						(mapcar (lambda (dir)
-							  (cons 'i (concat dir "/ebin")))
-							(directory-files dep-path t "[^.]$")))))
-					  (directory-files "../.." t "[^.]$")))))))
-
-(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
-
-(add-to-list 'auto-mode-alist '("\\.arc$" . arc-mode))
+	  #'(lambda () 
+	      (setq indent-tabs-mode nil ;Play nice with non-Emacs heathens
+		    ;; Add paths to ../../*/deps/ebin for running & compiling:
+		    ;; (Restart *erlang* shell when new dependancies are added)
+		    inferior-erlang-machine-options
+		    (append (remove nil
+				    (mapcan (lambda (app-path)
+					      (let ((ebin (concat app-path "/ebin")))
+						(when (file-readable-p ebin)
+						  (list "-pa" ebin))))
+					    (directory-files "../.." t "[^.]$")))
+			    (remove nil
+				    (mapcan (lambda (dep)
+					      (let ((dep-path (concat dep "/deps")))
+						(when (file-readable-p dep-path)
+						  (mapcan (lambda (dir)
+							    (list "-pa" (concat dir "/ebin")))
+							  (directory-files dep-path t "[^.]$")))))
+					    (directory-files "../.." t "[^.]$"))))
+		    erlang-compile-extra-opts
+		    (append (remove nil
+				    (mapcan (lambda (app-path)
+					      (let ((ebin (concat app-path "/ebin")))
+						(when (file-readable-p ebin)
+						  (list "-pa" ebin))))
+					    (directory-files "../.." t "[^.]$")))
+			    (remove nil
+				    (mapcan (lambda (dep)
+					      (let ((dep-path (concat dep "/deps")))
+						(when (file-readable-p dep-path)
+						  (mapcar (lambda (dir)
+							    (cons 'i (concat dir "/ebin")))
+							  (directory-files dep-path t "[^.]$")))))
+					    (directory-files "../.." t "[^.]$")))))))
 
 (add-hook 'markdown-mode-hook (lambda ()
 				;; Keep plain-text version readable
@@ -273,16 +298,16 @@
  '(markdown-header-face-1 ((t (:inherit markdown-header-face
 					;;:height 1.5
 					:underline t
-					:foreground "brown"))) t)
+					:foreground "brown"))))
  '(markdown-header-face-2 ((t (:inherit markdown-header-face
 					;;:height 1.3
 					:underline t
-					:foreground "orange"))) t)
+					:foreground "orange"))))
  '(markdown-header-face-3 ((t (:inherit markdown-header-face
-					:foreground "gold"))) t))
+					:foreground "salmon")))))
 
 ;; (add-to-list 'elixir-mode-hook
-;; 	     '(lambda ()
+;; 	     #'(lambda ()
 ;; 	       (smartparens-mode)
 ;; 	       ;; https://github.com/elixir-lang/emacs-elixir
 ;; 	       ;; "Also, if you use smartparens you can piggyback on some of its
@@ -309,3 +334,13 @@
 ;; 	       ;;FIXME: requiring 'ruby-mode doesn't resolve warning: Can't Find...
 ;; 	       ;;(ruby-end-mode +1)
 ;; 	       ))
+
+(add-hook 'rust-mode-hook #'(lambda ()
+			      (setq company-tooltip-align-annotations t)
+			      (cargo-minor-mode)
+			      ;(racer-mode)
+			      (eldoc-mode)
+			      (electric-pair-local-mode)))
+
+(add-hook 'cargo-process-mode-hook #'(lambda ()
+				       (visual-line-mode)))

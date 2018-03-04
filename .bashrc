@@ -1,6 +1,7 @@
 ## .bashrc
 
 export LANG=en_CA.UTF-8
+export LC_CTYPE=$LANG
 export GDM_LANG=en_CA
 export LANGUAGE=en_CA
 
@@ -23,20 +24,24 @@ one_agent() {
     fi
 }
 
-
 alias ls='ls -FC'
 
 
 case $OSTYPE in
-darwin*)
-	#prevent 'tar' from creating or using those annoying MacOSX metadata files: e.g., ._foo
+    darwin*)
+	# Prevent 'tar' from creating or using those annoying MacOSX metadata files:
+	# e.g., ._foo
 	export COPYFILE_DISABLE=1
 	export COPY_EXTENDED_ATTRIBUTES_DISABLE=1
 	PATH=${PATH}:/sw/bin:/Local/bin
 	;;
-*bsd)
+    *bsd)
 	;;
-linux*)
+    linux*)
+	PATH="${PATH}:~/.cargo/bin"
+	# https://doc.rust-lang.org/book/second-edition/ch09-01-unrecoverable-errors-with-panic.html
+	export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+	export RUST_BACKTRACE=1
 	;;
 esac
 

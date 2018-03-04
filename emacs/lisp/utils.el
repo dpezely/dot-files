@@ -171,7 +171,6 @@ time."
 ;;(remote-slime "danielp@wfc-sys-zip-001" 4005 4005)
 ;;(remote-slime "danielp@wfc-zit-dev-001" 4005 4005)
 
-
 (defun fi:extract-list (arg)
   "Take the list after the point and remove the surrounding list.  With
 argument ARG do it that many times."
@@ -185,48 +184,65 @@ argument ARG do it that many times."
     (insert string)
     (backward-sexp 1)))
 
-(defun insert-matched-pair (opening closing &optional backwards)
-  "Insert matched pairs such as Begin End or { }, and place cursor in between"
-  (interactive)
-  (if (region-active-p)
-      (let ((start (point))
-	    (end (+ (mark t) (length opening) (length closing)))
-	    (string (buffer-substring (region-beginning) (region-end))))
-	(delete-region start (mark t))
-	(insert opening string closing)
-	(backward-char (or backwards 1))
-	(indent-region start end))
-      (let ((back-count (if backwards
-			    (- backwards (count-if (lambda (x)
-						     (= x 10)) ; \n
-						   (string-to-list closing)))
-			    1)))
-	(insert (replace-regexp-in-string "\n" "" opening)
-		(replace-regexp-in-string "\n" "" closing))
-	(backward-char back-count))))
-
 (defun mark-rust-statement ()
   (interactive)
   ;; FIXME: add parser; in presence of "{", skip to matching "}"
   (let ((sentence-end "[;}]"))
     (mark-end-of-sentence 1)))
 
-(defun insert-rust-parens ()
+(defun cargo-process-build-backtrace ()
+  "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
   (interactive)
-  (insert-matched-pair "(" ")"))
+  (let ((value (getenv "RUST_BACKTRACE")))
+    (setenv "RUST_BACKTRACE" "t")
+    (let ((cargo-process--command-test (concat cargo-process--command-test
+					       " --verbose")))
+      (cargo-process-test))
+    (if value
+	(setenv "RUST_BACKTRACE" value)
+      (setenv "RUST_BACKTRACE"))))
 
-(defun insert-rust-curlies ()
+(defun cargo-process-build-full-backtrace ()
+  "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
   (interactive)
-  (insert-matched-pair "{\n" "\n}\n" 3))
+  (let ((value (getenv "RUST_BACKTRACE")))
+    (setenv "RUST_BACKTRACE" "full")
+    (let ((cargo-process--command-test (concat cargo-process--command-test
+					       " --verbose")))
+      (cargo-process-test))
+    (if value
+	(setenv "RUST_BACKTRACE" value)
+      (setenv "RUST_BACKTRACE"))))
 
-(defun insert-rust-square-brackets ()
-  (interactive)
-  (insert-matched-pair "[" "]"))
+(defun cargo-process-build-with-clippy ()
+  "Compile rust crate with Clippy as optional feature.
 
-(defun insert-rust-angle-brackets ()
-  (interactive)
-  (insert-matched-pair "<" ">"))
+  Note that as of Rust v1.20 (September 2017), Clippy still
+  requires Nightly build of rustc.  Therefore, run the following
+  commands from shell at an appropriate point in your dev cycle:
 
-(defun insert-rust-block ()
+  rustup self update
+  rustup update stable
+  cargo update
+  rustup update nightly
+
+  rustup default nightly
+  cargo build --features clippy  # via C-c C-c c, not C-c C-c C-S-k
+  rustup default stable
+
+  While there are many ways to invoke Clippy, this uses the
+  optional dependency approach (rather than cargo subcommand).
+  https://github.com/rust-lang-nursery/rust-clippy#optional-dependency"
   (interactive)
-  (insert-matched-pair "|| {\n" "\n}\n" 3))
+  (cargo-process--start "Build"
+			(concat cargo-process--command-build
+				" --features clippy")))
+
+(defun date-today ()
+  "Insert today's date"
+  (interactive)
+  (let* ((date (calendar-current-date))
+	 (month (car date))
+	 (day (cadr date))
+	 (year (caddr date)))
+    (insert (format "%d-%d-%d" year month day))))
