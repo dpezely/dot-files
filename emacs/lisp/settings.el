@@ -16,6 +16,8 @@
       version-control nil
       delete-old-versions t)
 
+(setq-default indent-tabs-mode nil)
+
 (setq calendar-today-visible-hook 'calendar-star-date
       calendar-view-diary-initially-flag t
       diary-display-function 'diary-fancy-display
@@ -101,6 +103,7 @@
 (add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
 
 (add-hook 'lisp-mode-hook #'(lambda () 
+			      (setq-default indent-tabs-mode nil)
 			      (setq lisp-indent-function 'common-lisp-indent-function
 				    ;;common-lisp-style "sbcl"
 				    font-lock-maximum-decoration t)

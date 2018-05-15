@@ -1,12 +1,14 @@
 ;;; -*-Lisp-*-
-;;; dot.lisp - save in /home/www/ then sym-link as ~/.sbclrc and ~/ccl-init.lisp
+;;; dot.lisp - sym-link as ~/.sbclrc and ~/ccl-init.lisp
 ;;; for SBCL character encoding: export LANG=en_US.UTF-8
 
 (in-package :cl-user)
 
 (require 'asdf)
 
-(declaim (optimize (debug 3) (safety 2) (speed 1) (space 0)))
+;; In SBCL, tail-call optimization goes away when debug > 2
+;; http://sbcl.org/manual/index.html#Debug-Tail-Recursion
+(declaim (optimize (safety 3) (debug 2) (speed 1) (space 0)))
 
 ;;; Yanked from http://www.cliki.net/asdf based upon
 ;;; http://www.sbcl.org/manual/Automatic-Recompilation-of-Stale-Fasls.html
@@ -24,6 +26,9 @@
      #-(or sbcl allegro lispworks cmu) error ()
      (asdf:perform (make-instance 'asdf:compile-op) c)
      (call-next-method))))
+
+;; FIXME: ASDF Manual says to push pathnames as strings with trailing slash
+;; https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF
 
 ;; Get ~/lisp/ if it exists:
 (let ((dir (probe-file (merge-pathnames "lisp" (user-homedir-pathname)))))

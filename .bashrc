@@ -24,6 +24,23 @@ one_agent() {
     fi
 }
 
+archive() {
+    URL=https://web.archive.org/save/$1
+    echo "$URL"
+    wget --method=HEAD $URL
+}
+
+play() {
+    for x in $*
+    do
+	mpc -q load $x
+    done
+    mpc -q random on
+    mpc -q repeat on
+    song_count=$(grep -c -v '^#' ~/Music/playlists/$1.m3u)
+    mpc play $(( $(date +%s) % $song_count ))
+}
+
 alias ls='ls -FC'
 
 
@@ -40,8 +57,10 @@ case $OSTYPE in
     linux*)
 	PATH="${PATH}:~/.cargo/bin"
 	# https://doc.rust-lang.org/book/second-edition/ch09-01-unrecoverable-errors-with-panic.html
-	export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
-	export RUST_BACKTRACE=1
+        if [ $(which rustc) ]; then
+	    export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+	    export RUST_BACKTRACE=1
+        fi
 	;;
 esac
 
