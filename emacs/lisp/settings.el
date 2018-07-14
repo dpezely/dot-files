@@ -1,4 +1,4 @@
-;; settings.el
+;;;; settings.el
 
 (setq inhibit-startup-screen t
       initial-scratch-message nil
@@ -7,6 +7,7 @@
       display-time-day-and-date t
       battery-mode-line-format "[%b%p%%]"
       sentence-end-double-space t
+      vc-handled-backends '()
       ;;truncate-partial-width-windows t
       ;;truncate-lines t
       pop-up-windows nil
@@ -46,9 +47,8 @@
 (add-hook 'comint-mode-hook 
 	  #'(lambda () 
 	      (line-number-mode 1)
-	      (setq comint-password-prompt-regexp "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")
-	      (setq comint-output-filter-functions '(comint-watch-for-password-prompt
-						     comint-postoutput-scroll-to-bottom))))
+	      (setq comint-password-prompt-regexp
+                    "[Pp]ass\\(word\\|[ ]*[Pp]hrase\\).*[:]")))
 
 ;; set up unicode
 (set-language-environment "UTF-8")	;see also 'slime-net-coding-system var
@@ -94,33 +94,19 @@
       paren-match-face 'bold
       paren-sexp-mode t)
 
-
-;;http://www.emacswiki.org/cgi-bin/wiki/mic-paren.el
-(require 'mic-paren)
-(paren-activate)
-
 ;;(add-to-list 'slime-contribs 'slime-cl-indent)
-(add-to-list 'auto-mode-alist '("\\.asd$" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.asd\\'" . lisp-mode))
 
-(add-hook 'lisp-mode-hook #'(lambda () 
-			      (setq-default indent-tabs-mode nil)
-			      (setq lisp-indent-function 'common-lisp-indent-function
-				    ;;common-lisp-style "sbcl"
-				    font-lock-maximum-decoration t)
-			      (paren-toggle-matching-quoted-paren 1)
-			      (show-paren-mode t)))
+(add-hook 'lisp-mode-hook
+          #'(lambda () 
+              (setq-default indent-tabs-mode nil)
+              (setq lisp-indent-function 'common-lisp-indent-function
+                    ;;common-lisp-style "sbcl"
+                    font-lock-maximum-decoration t)
+              (paren-toggle-matching-quoted-paren 1)
+              (show-paren-mode t)))
 
-;;http://mumble.net/~campbell/emacs/paredit.html
-;(add-hook 'lisp-mode-hook #'(lambda () (paredit-mode 1)))
-
-;(font-lock-add-keywords 
-; 'lisp-mode
-; ;allegro macros:
-; '(("\\<\\(if\\*\\|then\\|elseif\\|else\\)\\>" . font-lock-keyword-face)))
-
-
-
-;;; for remote slime sessions: [watch "lisp movies"]
+;;; For remote slime sessions: [watch "lisp movies"]
 
 ;; On local shell:
 ;; ssh -L4005:127.0.0.1:4005 daniel@shell.example.com
@@ -136,47 +122,18 @@
 
 ;; Use single channel for slime sessions to remote hosts.
 ;; On remote lisp:
-;(asdf:operate 'asdf:load-op :swank)
-;(setf swank:*use-dedicated-output-stream* nil)
-;(swank:create-server :port 4005 :dont-close t)
+;(require 'swank)
+;;or (asdf:operate 'asdf:load-op :swank)
+;;(setf swank:*use-dedicated-output-stream* nil)
+;;(swank:create-server :port 4005 :dont-close t)
 
 
-(add-hook 'org-mode-hook
-	  (lambda ()
-	    (setq org-export-author-info nil
-		  ;;rg-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
-		  org-export-email-info nil
-		  org-export-time-stamp-file nil
-		  org-export-headline-levels 2
-		  org-use-sub-superscripts nil
-		  org-emphasis-alist (delete-if (lambda (x)
-						  (equal (car x) "+"))
-						org-emphasis-alist)
-		  org-export-html-coding-system 'utf-8
-		  org-html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\" />"
-		  ;; org-export-html-style-extra
-		  ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
-		  ;; 	body {font-family:sans-serif}
-		  ;; 	a {text-decoration:none}
-		  ;; 	#table-of-contents {font-size:75%}
-		  ;; 	/*]]>*/--></style>"
-		  org-html-postamble nil
-		  org-export-copy-to-kill-ring nil)))
+;;; https://github.com/jwiegley/use-package
 
-(add-hook 'org-present-mode-hook
-	  (lambda ()
-	    (org-present-big)
-	    (org-display-inline-images)))
+(add-hook 'after-save-hook
+          'executable-make-buffer-file-executable-if-script-p)
 
-(add-hook 'org-present-mode-quit-hook
-	  (lambda ()
-	    (org-present-small)
-	    (org-remove-inline-images)))
-
-(add-hook 'text-mode-hook
-	  #'(lambda () 
-	      (set-fill-column 76) 
-	      (visual-line-mode nil)))
+;;(add-to-list 'auto-mode-alist '("\\.arc\\'" . arc-mode))
 
 (add-hook 'c-mode-common-hook
 	  #'(lambda ()
@@ -187,163 +144,290 @@
 	      (set-fill-column 79)
 	      (auto-fill-mode 1)))
 
+(use-package cargo
+  ;; Hook for rust language to access build manager
+  :after rust-mode
+  :config
+  (add-hook 'rust-mode-hook #'cargo-minor-mode)
+  (add-hook 'cargo-process-mode-hook #'visual-line-mode))
+;; Ironically, there is no file mode for rust's Cargo.toml files
+(add-to-list 'auto-mode-alist '("Cargo.toml\\'" . conf-mode))
+
+(use-package company
+  ;; for TAB key word completion, used by racer
+  :config
+  (add-hook 'racer-mode-hook #'company-mode))
+
+(use-package company-lsp
+  ;; facilitates completion-at-point (C-M-i)
+  :after company
+  :config
+  (setq company-lsp-enable-recompletion t)
+  (lsp-define-stdio-client lsp-rust "rust" #'lsp-rust--get-root nil
+                           :command-fn #'lsp-rust--rls-command
+                           :initialize #'lsp-rust--initialize-client)
+  (push 'company-lsp company-backends))
+
+(use-package eglot
+    :disabled
+  ;; Requires Emacs-26.  Use this OR lsp-mode, but not both.
+  ;; Emacs polyglot, a lightweight LSP https://github.com/joaotavora/eglot
+  ;; See also lsp-mode.
+  ;; (Works with project.el)
+  ;; M-x eglot-shutdown says bye-bye to the server
+  :bind
+  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
+  (define-key eglot-mode-map (kbd "M-.") 'xref-find-definitions))
+
+(use-package elixir-mode
+    :disabled
+  ;; This was for a very early version of Elixir for treating various
+  ;; code blocks that end with the keyword END to be handled similarly
+  ;; as Lisp code blocks.  There are probably better solutions from
+  ;; others now...
+  :init
+  (use-package ruby-mode)
+  (use-package ruby-end-mode)
+  (use-package smartparens-mode)
+  :after (ruby-mode ruby-end-mode smartparens-mode)
+  :config
+  (smartparens-mode)
+  ;; https://github.com/elixir-lang/emacs-elixir
+  ;; "Also, if you use smartparens you can piggyback on some of its
+  ;; functionality for dealing with Ruby's do .. end blocks. A sample
+  ;; configuration would be:"
+  (sp-with-modes '(elixir-mode)
+    (sp-local-pair "fn" "end"
+                   :when '(("SPC" "RET"))
+                   :actions '(insert navigate))
+    (sp-local-pair "do" "end"
+                   :when '(("SPC" "RET"))
+                   :post-handlers '(sp-ruby-def-post-handler)
+                   :actions '(insert navigate))
+    (sp-local-pair "case" "end"
+                   :when '(("SPC" "RET"))
+                   :post-handlers '(sp-ruby-def-post-handler)
+                   :actions '(insert navigate)))
+  (defun auto-activate-ruby-end-mode-for-elixir-mode ()
+    (set (make-variable-buffer-local 'ruby-end-expand-keywords-before-re)
+         "\\(?:^\\|\\s-+\\)\\(?:do\\)")
+    (set (make-variable-buffer-local 'ruby-end-check-statement-modifiers) nil)
+    (ruby-end-mode +1)))
+
+(use-package erlang-mode
+    :disabled
+  :config
+  (add-to-list 'completion-ignored-extensions ".beam") ; Erlang VM
+  (setq indent-tabs-mode nil
+        ;; Add paths to ../../*/deps/ebin for running & compiling:
+        ;; (Restart *erlang* shell when new dependancies are added)
+        inferior-erlang-machine-options 'erlang-mapcan-paths
+        erlang-compile-extra-opts       'erlang-mapcar-paths))
+
+(use-package gh-md
+    :disabled
+  ;;; Render markdown using the Github-flavoured markdown
+  :after markdown-mode)
+
+;; (add-hook 'go-mode-hook
+;; 	  #'(lambda ()
+;; 	      ;;(setq tab-width 4)
+;; 	      (add-hook 'before-save-hook #'gofmt-before-save)))
+
 ;; Use eslint instead for ECMAScript 2015 but flycheck for everything else
 ;; http://www.flycheck.org/en/manual/latest/index.html
 ;;(setq flycheck-disabled-checkers '(javascript-jshint json-jsonlist)
 ;;      flycheck-temp-prefix ".flycheck")
-
 ;; use eslint with web-mode for jsx files
+;;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 ;;(flycheck-add-mode 'javascript-eslint 'web-mode)
+;; (add-hook 'javascript-mode-hook
+;; 	  #'(lambda ()
+;; 	      ;;(setq tab-width 4)
+;; 	      (set-fill-column 79)
+;; 	      (auto-fill-mode 1)))
+;; (add-hook 'web-mode-hook
+;; 	  #'(lambda ()
+;; 	      ;;(flycheck-mode)
+;; 	      ;; See web-mode.org
+;; 	      (setq web-mode-markup-indent-offset 2
+;; 		    web-mode-css-indent-offset 2
+;; 		    web-mode-code-indent-offset 2)
+;; 	      (defadvice web-mode-highlight-part (around tweak-jsx activate)
+;; 		(if (equal web-mode-content-type "jsx")
+;; 		    (let ((web-mode-enable-part-face nil))
+;; 		      ad-do-it)
+;; 		    ad-do-it))))
 
-(add-hook 'web-mode-hook
-	  #'(lambda ()
-	      ;;(flycheck-mode)
-	      ;; See web-mode.org
-	      (setq web-mode-markup-indent-offset 2
-		    web-mode-css-indent-offset 2
-		    web-mode-code-indent-offset 2)
-	      (defadvice web-mode-highlight-part (around tweak-jsx activate)
-		(if (equal web-mode-content-type "jsx")
-		    (let ((web-mode-enable-part-face nil))
-		      ad-do-it)
-		    ad-do-it))))
+(use-package html-to-markdown
+    :disabled
+  ;;; HTML to Markdown converter written in Emacs-lisp
+  :after markdown-mode)
 
-(add-hook 'javascript-mode-hook
-	  #'(lambda ()
-	      ;;(setq tab-width 4)
-	      (set-fill-column 79)
-	      (auto-fill-mode 1)))
+(use-package html2org
+    :disabled
+  ;;; Convert html to org format text
+  :after org)
 
-(add-hook 'go-mode-hook
-	  #'(lambda ()
-	      ;;(setq tab-width 4)
-	      (add-hook 'before-save-hook #'gofmt-before-save)))
+(use-package lsp-mode
+  ;; Language Server Protocol https://github.com/emacs-lsp/lsp-mode
+  ;; See also eglot, an alternative and lighter LSP implementation
+  :config
+  ;;(with-eval-after-load 'lsp-mode (require 'lsp-ui-flycheck))
+  (setq lsp-enable-codeaction t
+        lsp-enable-completion-at-point t
+        lsp-enable-eldoc t ; non-NIL to display fn args or var doc-string
+        lsp-enable-flycheck t ; non-NIL give overlay of doc-string
+        lsp-enable-indentation t
+        lsp-enable-xref t
+        lsp-ui-doc-enable t
+        lsp-ui-flycheck-enable t
+        lsp-ui-imenu-enable t
+        lsp-ui-peek-enable t
+        lsp-ui-sideline-enable t  ; non-NIL overlays messages at right
+        lsp-ui-sideline-show-code-actions t ; non-NIL for hint to fix code
+        ;; non-NIL enables display of symbols information; NIL does
+        ;; _not_ impact display of flycheck diagnostics or Code Actions:
+        lsp-ui-sideline-show-hover nil))
 
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+;;FIXME: enable highlight of fn param like SLIME does
+(use-package lsp-rust
+  ;; Language Server Protocol for Rust language
+  ;; https://github.com/emacs-lsp/lsp-rust
+  ;; See also: https://github.com/rust-lang-nursery/rls
+  ;; and set 'lsp-rust-rls-command or environment variable RLS_ROOT
+  :after lsp-mode
+  :config
+  (add-hook 'rust-mode-hook #'lsp-rust-enable)
+  (setq lsp-rust-rls-command '("rustup" "run" "stable" "rls")))
 
-;;(autoload 'ruby-mode "ruby-mode" "Load ruby-mode")
-;;(add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
-;;(add-hook 'ruby-mode-hook 'turn-on-font-lock)
-;;(add-to-list 'interpreter-mode-alist '("ruby" . ruby-mode))
+(use-package lsp-ui
+  ;; https://github.com/emacs-lsp/lsp-ui
+  :config
+  (add-hook 'lsp-mode-hook #'lsp-ui-mode)
+  :custom-face                      ;see also: M-x list-colors-display
+  (lsp-ui-sideline-current-symbol ((t :foreground "brown"
+                                      :weight ultra-bold
+                                      :box (:line-width -1 :color "brown")
+                                      :height 0.99)))
+  (lsp-ui-sideline-code-action ((t :foreground "orange"))))
 
-;;(add-to-list 'auto-mode-alist '("\\.rhtml$" . html-mode)) ;ruby on rails
-;;(add-to-list 'auto-mode-alist '("\\.xhtml$" . html-mode))
-;;(add-to-list 'auto-mode-alist '("\\.json$" . javascript-mode))
-;;(add-to-list 'auto-mode-alist '("\\.as$" . actionscript-mode))
-;;(add-to-list 'auto-mode-alist '("\\.mxml$" . xml-mode)) ;Flex/Flash
-;;(add-to-list 'auto-mode-alist '("\\.php$" . perl-mode))
-;;(add-to-list 'auto-mode-alist '("\\.inc$" . perl-mode))
+(use-package markdown-mode
+    ;;; https://jblevins.org/projects/markdown-mode/
+    :pin "melpa-stable"
+  :commands (markdown-mode gfm-mode)
+  :mode (("\\.md\\'" . markdown-mode))
+  :config
+  ;; Allow collapsing subtrees for easy nav:
+  ;;(outline-minor-mode)
+  ;; undo with M-x show-subtree or show-all:
+  ;;(hide-sublevels 1)
+  (auto-fill-mode)
+  :custom-face                      ;see also: M-x list-colors-display
+  (markdown-header-face-1 ((t (:inherit markdown-header-face
+                                        :underline t
+                                        :foreground "brown"))))
+  (markdown-header-face-2 ((t (:inherit markdown-header-face
+                                        :underline t
+                                        :foreground "orange"))))
+  (markdown-header-face-3 ((t (:inherit markdown-header-face
+                                        :foreground "salmon")))))
 
-(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.arc$" . arc-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+(use-package markdown-mode+
+    :disabled
+  :after markdown-mode)
 
+(use-package mic-paren
+  ;; http://www.emacswiki.org/cgi-bin/wiki/mic-paren.el
+  :config
+  (paren-activate))
 
-(add-to-list 'completion-ignored-extensions ".swf") ; shockwave-flash
-(add-to-list 'completion-ignored-extensions ".beam") ; Erlang VM
+(use-package org
+  :config
+  (setq org-export-author-info nil
+        ;;org-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
+        org-export-email-info nil
+        org-export-time-stamp-file nil
+        org-export-headline-levels 2
+        org-use-sub-superscripts nil
+        org-emphasis-alist (delete-if (lambda (x)
+                                        (equal (car x) "+"))
+                                      org-emphasis-alist)
+        org-export-html-coding-system 'utf-8
+        org-html-head (concat "<link rel=\"stylesheet\""
+                              " type=\"text/css\" href=\"style.css\" />")
+        ;; org-export-html-style-extra
+        ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
+        ;; 	body {font-family:sans-serif}
+        ;; 	a {text-decoration:none}
+        ;; 	#table-of-contents {font-size:75%}
+        ;; 	/*]]>*/--></style>"
+        org-html-postamble nil
+        org-export-copy-to-kill-ring nil))
 
-(add-hook 'scheme-mode-hook #'(lambda () 
-				(setq font-lock-maximum-decoration t)
-				(paren-toggle-matching-quoted-paren 1)
-				(show-paren-mode t)))
+(use-package org-present
+    :disabled
+  ;; Use org-mode for slide show presentation
+  :after org-mode
+  :config
+  (add-hook 'org-present-mode-hook
+            (lambda ()
+              (org-present-big)
+              (org-display-inline-images)))
+  (add-hook 'org-present-mode-quit-hook
+            (lambda ()
+              (org-present-small)
+              (org-remove-inline-images))))
 
-(add-hook 'erlang-mode-hook
+(use-package racer
+  ;; Provides M-. for Rust language
+  :after 'rust-mode
+  :config
+  (add-hook 'rust-mode-hook #'racer-mode))
+
+(use-package rust-mode
+  ;; For LINT checking, consider installing Rust's Clippy.
+  ;; Run: rustup install nightly && cargo +nightly install clippy
+  ;; then invoke with: M-x cargo-process-clippy
+  :after smartparens
+  :config
+  ;; Requires the Language Server Protocol (LSP) be enabled,
+  ;; but sometimes in emacs-25.2 fails with
+  ;; "Suspicious state from syntax checker rust-cargo..."
+  ;; When viewing rust code, use: M-x flycheck-buffer
+  (add-hook 'rust-mode-hook #'flycheck-mode)
+  (add-hook 'rust-mode-hook #'smartparens-mode)
+  (add-hook 'rust-mode-hook #'(lambda () (vc-mode-line nil)))
+  ;; FIXME: insert matching pairs of < and >
+  ;; (sp-with-modes '(rust-mode)
+  ;;   (sp-local-pair "<" ">" :actions '(insert navigate)))
+  (setq cargo-process--command-clippy "+nightly clippy"
+        company-tooltip-align-annotations t
+        c-syntactic-indentation t
+        c-basic-offset 2))
+
+(use-package rust-playground
+  ;; Not quite a REPL, similar to *slime-scratch* as code sandbox
+  ;; https://github.com/grafov/rust-playground
+  ;; Start via: M-x rust-playground
+  ;; when prompted for comment syntax, this is for .toml file, so use #
+  ;; For sharing like gist: M-x rust-playpen-region or -buffer
+  ;; Try: M-x rust-playground-download
+  :after rust-mode
+  :config
+  (setq rust-playground-basedir "/tmp/rust-playground"))
+
+;; (add-hook 'scheme-mode-hook #'(lambda () 
+;; 				(setq font-lock-maximum-decoration t)
+;; 				(paren-toggle-matching-quoted-paren 1)
+;; 				(show-paren-mode t)))
+
+;; Sample instructions for new package installer:
+;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
+(use-package smartparens)
+
+(add-hook 'text-mode-hook
 	  #'(lambda () 
-	      (setq indent-tabs-mode nil ;Play nice with non-Emacs heathens
-		    ;; Add paths to ../../*/deps/ebin for running & compiling:
-		    ;; (Restart *erlang* shell when new dependancies are added)
-		    inferior-erlang-machine-options
-		    (append (remove nil
-				    (mapcan (lambda (app-path)
-					      (let ((ebin (concat app-path "/ebin")))
-						(when (file-readable-p ebin)
-						  (list "-pa" ebin))))
-					    (directory-files "../.." t "[^.]$")))
-			    (remove nil
-				    (mapcan (lambda (dep)
-					      (let ((dep-path (concat dep "/deps")))
-						(when (file-readable-p dep-path)
-						  (mapcan (lambda (dir)
-							    (list "-pa" (concat dir "/ebin")))
-							  (directory-files dep-path t "[^.]$")))))
-					    (directory-files "../.." t "[^.]$"))))
-		    erlang-compile-extra-opts
-		    (append (remove nil
-				    (mapcan (lambda (app-path)
-					      (let ((ebin (concat app-path "/ebin")))
-						(when (file-readable-p ebin)
-						  (list "-pa" ebin))))
-					    (directory-files "../.." t "[^.]$")))
-			    (remove nil
-				    (mapcan (lambda (dep)
-					      (let ((dep-path (concat dep "/deps")))
-						(when (file-readable-p dep-path)
-						  (mapcar (lambda (dir)
-							    (cons 'i (concat dir "/ebin")))
-							  (directory-files dep-path t "[^.]$")))))
-					    (directory-files "../.." t "[^.]$")))))))
-
-(add-hook 'markdown-mode-hook (lambda ()
-				;; Keep plain-text version readable
-				;; using conventional 80 column tty:
-				(visual-line-mode 0)
-				;; Enforce hard wrap so plain text is
-				;; readable in standard 80x24 terminal:
-				(auto-fill-mode)
-				;; Allow collapsing subtrees for easy nav:
-				;;(outline-minor-mode)
-				;; undo with M-x show-subtree or show-all:
-				;;(hide-sublevels 1)
-				))
-
-(custom-set-faces
- ;; use: M-x list-colors-display
- '(markdown-header-face-1 ((t (:inherit markdown-header-face
-					;;:height 1.5
-					:underline t
-					:foreground "brown"))))
- '(markdown-header-face-2 ((t (:inherit markdown-header-face
-					;;:height 1.3
-					:underline t
-					:foreground "orange"))))
- '(markdown-header-face-3 ((t (:inherit markdown-header-face
-					:foreground "salmon")))))
-
-;; (add-to-list 'elixir-mode-hook
-;; 	     #'(lambda ()
-;; 	       (smartparens-mode)
-;; 	       ;; https://github.com/elixir-lang/emacs-elixir
-;; 	       ;; "Also, if you use smartparens you can piggyback on some of its
-;; 	       ;; functionality for dealing with Ruby's do .. end blocks. A sample
-;; 	       ;; configuration would be:"
-;; 	       (sp-with-modes '(elixir-mode)
-;; 		(sp-local-pair "fn" "end"
-;; 		 :when '(("SPC" "RET"))
-;; 		 :actions '(insert navigate))
-;; 		(sp-local-pair "do" "end"
-;; 		 :when '(("SPC" "RET"))
-;; 		 :post-handlers '(sp-ruby-def-post-handler)
-;; 		 :actions '(insert navigate))
-;; 		(sp-local-pair "case" "end"
-;; 		 :when '(("SPC" "RET"))
-;; 		 :post-handlers '(sp-ruby-def-post-handler)
-;; 		 :actions '(insert navigate)))))
-
-;; (add-to-list 'elixir-mode-hook
-;; 	     (defun auto-activate-ruby-end-mode-for-elixir-mode ()
-;; 	       (set (make-variable-buffer-local 'ruby-end-expand-keywords-before-re)
-;; 		    "\\(?:^\\|\\s-+\\)\\(?:do\\)")
-;; 	       (set (make-variable-buffer-local 'ruby-end-check-statement-modifiers) nil)
-;; 	       ;;FIXME: requiring 'ruby-mode doesn't resolve warning: Can't Find...
-;; 	       ;;(ruby-end-mode +1)
-;; 	       ))
-
-(add-hook 'rust-mode-hook #'(lambda ()
-			      (setq company-tooltip-align-annotations t)
-			      (cargo-minor-mode)
-			      ;(racer-mode)
-			      (eldoc-mode)
-			      (electric-pair-local-mode)))
-
-(add-hook 'cargo-process-mode-hook #'(lambda ()
-				       (visual-line-mode)))
+	      (set-fill-column 76) 
+              (electric-quote-local-mode)
+	      (visual-line-mode nil)))

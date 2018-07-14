@@ -1,12 +1,10 @@
-;; utils.el
-
+;;;; utils.el
 
 (fset 'exit 'save-buffers-kill-emacs)
 
 (fset 'make 'compile)
-(fset 'run  'compile)
 
-;; See keyboard.el for where these are used:
+;; See keyboard.el or settings.el for where many of these are used:
 
 (defun stty-window-size ()
   "tell a shell from within emacs what the size of the window is --pez"
@@ -184,6 +182,46 @@ argument ARG do it that many times."
     (insert string)
     (backward-sexp 1)))
 
+(defun erlang-mapcan-paths ()
+  "Add paths to ../../*/deps/ebin for running & compiling Erlang code.
+  Requires restarting `*erlang*' shell when new dependancies are added.
+  To be bound to `inferior-erlang-machine-options' within erlang-mode-hook"
+  (append (remove nil
+                  (mapcan (lambda (app-path)
+                            (let ((ebin (concat app-path "/ebin")))
+                              (when (file-readable-p ebin)
+                                (list "-pa" ebin))))
+                          (directory-files "../.." t "[^.]$")))
+          (remove nil
+                  (mapcan (lambda (dep)
+                            (let ((dep-path (concat dep "/deps")))
+                              (when (file-readable-p dep-path)
+                                ;; differs from erlang-compile-extra-opts
+                                (mapcan (lambda (dir)
+                                          (list "-pa" (concat dir "/ebin")))
+                                        (directory-files dep-path t "[^.]$")))))
+                          (directory-files "../.." t "[^.]$")))))
+
+(defun erlang-mapcar-paths ()
+  "Add paths to ../../*/deps/ebin for running & compiling Erlang code.
+  Requires restarting `*erlang*' shell when new dependancies are added.
+  To be bound to `erlang-compile-extra-opts' within erlang-mode-hook"
+  (append (remove nil
+                  (mapcan (lambda (app-path)
+                            (let ((ebin (concat app-path "/ebin")))
+                              (when (file-readable-p ebin)
+                                (list "-pa" ebin))))
+                          (directory-files "../.." t "[^.]$")))
+          (remove nil
+                  (mapcan (lambda (dep)
+                            (let ((dep-path (concat dep "/deps")))
+                              (when (file-readable-p dep-path)
+                                ;; differs from inferior-erlang-machine-options:
+                                (mapcar (lambda (dir)
+                                          (cons 'i (concat dir "/ebin")))
+                                        (directory-files dep-path t "[^.]$")))))
+                          (directory-files "../.." t "[^.]$")))))
+
 (defun mark-rust-statement ()
   (interactive)
   ;; FIXME: add parser; in presence of "{", skip to matching "}"
@@ -214,29 +252,25 @@ argument ARG do it that many times."
 	(setenv "RUST_BACKTRACE" value)
       (setenv "RUST_BACKTRACE"))))
 
-(defun cargo-process-build-with-clippy ()
-  "Compile rust crate with Clippy as optional feature.
-
-  Note that as of Rust v1.20 (September 2017), Clippy still
-  requires Nightly build of rustc.  Therefore, run the following
-  commands from shell at an appropriate point in your dev cycle:
-
-  rustup self update
-  rustup update stable
-  cargo update
-  rustup update nightly
-
-  rustup default nightly
-  cargo build --features clippy  # via C-c C-c c, not C-c C-c C-S-k
-  rustup default stable
-
-  While there are many ways to invoke Clippy, this uses the
-  optional dependency approach (rather than cargo subcommand).
-  https://github.com/rust-lang-nursery/rust-clippy#optional-dependency"
-  (interactive)
-  (cargo-process--start "Build"
-			(concat cargo-process--command-build
-				" --features clippy")))
+(defun company-lsp--rust-completion-snippet (item)
+  "Function providing snippet with the rust language.
+  It parses the function's signature in ITEM (a CompletionItem)
+  to expand its arguments."
+  ;; https://github.com/tigersoldier/company-lsp
+  (-when-let* ((kind (gethash "kind" item))
+               (is-function (= kind 3)))
+    (let* ((detail (gethash "detail" item))
+           (snippet (when (and detail
+                               (s-matches? "^\\(pub \\)?\\(unsafe \\)?fn "
+                                           detail))
+                      (-some--> (substring detail (1+ (s-index-of "(" detail))
+                                           (s-index-of ")" detail))
+                                (replace-regexp-in-string
+                                 "^[^,]*self\\(, \\)?" "" it)
+                                (s-split ", " it)
+                                (mapconcat
+                                 (lambda (x) (format "${%s}" x)) it ", ")))))
+      (concat "(" (or snippet "$1") ")$0"))))
 
 (defun date-today ()
   "Insert today's date"
