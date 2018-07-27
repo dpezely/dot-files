@@ -104,7 +104,7 @@
                     ;;common-lisp-style "sbcl"
                     font-lock-maximum-decoration t)
               (paren-toggle-matching-quoted-paren 1)
-              (show-paren-mode t)))
+              (show-paren-mode 'disable)))
 
 ;;; For remote slime sessions: [watch "lisp movies"]
 
@@ -138,11 +138,10 @@
 (add-hook 'c-mode-common-hook
 	  #'(lambda ()
 	      ;;(hide-ifdef-mode)
-	      ;;(setq tab-width 4)
 	      ;;(c-set-style "linux")
 	      ;;(c-set-style "bsd")
 	      (set-fill-column 79)
-	      (auto-fill-mode 1)))
+	      (auto-fill-mode 'disable)))
 
 (use-package cargo
   ;; Hook for rust language to access build manager
@@ -212,7 +211,7 @@
     (set (make-variable-buffer-local 'ruby-end-expand-keywords-before-re)
          "\\(?:^\\|\\s-+\\)\\(?:do\\)")
     (set (make-variable-buffer-local 'ruby-end-check-statement-modifiers) nil)
-    (ruby-end-mode +1)))
+    (ruby-end-mode)))
 
 (use-package erlang-mode
     :disabled
@@ -224,40 +223,19 @@
         inferior-erlang-machine-options 'erlang-mapcan-paths
         erlang-compile-extra-opts       'erlang-mapcar-paths))
 
+(use-package flycheck
+  ;; Use eslint for ECMAScript 2015 (ES6) but flycheck for everything else
+  ;; http://www.flycheck.org/en/manual/latest/index.html
+  :config
+  (setq-default flycheck-disabled-checkers (append
+                                            flycheck-disabled-checkers
+                                            '(javascript-jshint json-jsonlist))
+                flycheck-temp-prefix ".flycheck"))
+
 (use-package gh-md
     :disabled
   ;;; Render markdown using the Github-flavoured markdown
   :after markdown-mode)
-
-;; (add-hook 'go-mode-hook
-;; 	  #'(lambda ()
-;; 	      ;;(setq tab-width 4)
-;; 	      (add-hook 'before-save-hook #'gofmt-before-save)))
-
-;; Use eslint instead for ECMAScript 2015 but flycheck for everything else
-;; http://www.flycheck.org/en/manual/latest/index.html
-;;(setq flycheck-disabled-checkers '(javascript-jshint json-jsonlist)
-;;      flycheck-temp-prefix ".flycheck")
-;; use eslint with web-mode for jsx files
-;;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-;;(flycheck-add-mode 'javascript-eslint 'web-mode)
-;; (add-hook 'javascript-mode-hook
-;; 	  #'(lambda ()
-;; 	      ;;(setq tab-width 4)
-;; 	      (set-fill-column 79)
-;; 	      (auto-fill-mode 1)))
-;; (add-hook 'web-mode-hook
-;; 	  #'(lambda ()
-;; 	      ;;(flycheck-mode)
-;; 	      ;; See web-mode.org
-;; 	      (setq web-mode-markup-indent-offset 2
-;; 		    web-mode-css-indent-offset 2
-;; 		    web-mode-code-indent-offset 2)
-;; 	      (defadvice web-mode-highlight-part (around tweak-jsx activate)
-;; 		(if (equal web-mode-content-type "jsx")
-;; 		    (let ((web-mode-enable-part-face nil))
-;; 		      ad-do-it)
-;; 		    ad-do-it))))
 
 (use-package html-to-markdown
     :disabled
@@ -268,6 +246,15 @@
     :disabled
   ;;; Convert html to org format text
   :after org)
+
+(use-package rjsx-mode
+    :pin "melpa-stable"
+  ;; https://github.com/felipeochoa/rjsx-mode
+  :mode (("\\.js[x]?\\'" . rjsx-mode))
+  ;; use eslint-mode for .js and .jsx files
+  :hook javascript-eslint
+  :config
+  (define-key rjsx-mode-map (kbd "C-d") nil))
 
 (use-package lsp-mode
   ;; Language Server Protocol https://github.com/emacs-lsp/lsp-mode
@@ -323,6 +310,7 @@
   ;; undo with M-x show-subtree or show-all:
   ;;(hide-sublevels 1)
   (auto-fill-mode)
+  (electric-quote-local-mode 'disable)
   :custom-face                      ;see also: M-x list-colors-display
   (markdown-header-face-1 ((t (:inherit markdown-header-face
                                         :underline t
@@ -420,7 +408,7 @@
 ;; (add-hook 'scheme-mode-hook #'(lambda () 
 ;; 				(setq font-lock-maximum-decoration t)
 ;; 				(paren-toggle-matching-quoted-paren 1)
-;; 				(show-paren-mode t)))
+;; 				(show-paren-mode 'disable)))
 
 ;; Sample instructions for new package installer:
 ;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
@@ -430,4 +418,4 @@
 	  #'(lambda () 
 	      (set-fill-column 76) 
               (electric-quote-local-mode)
-	      (visual-line-mode nil)))
+	      (visual-line-mode)))
