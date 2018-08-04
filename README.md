@@ -9,16 +9,16 @@ Without that commonality, this repo is the next best thing...
 
 ## Emacs
 
-My Emacs configuration begins with `~/[.emacs](./.emacs)`, but newer
+My Emacs configuration begins with `~/`[.emacs](./.emacs), but newer
 documentation since I started might put this in `~/.emacs.d/init.el`
 instead.  Name of this file is less significant that the rest.
 
-All my other elisp files are kept in `~/[emacs/lisp/](emacs/lisp/)`, but if
+All my other elisp files are kept in `~/`[emacs/lisp/](emacs/lisp/), but if
 you change this location, the corresponding path within `~/.emacs` must also
 be changed.
 
 The second most significant file here is
-`~/[emacs/lisp/settings.el](emacs/lisp/settings.el)` for working with Common
+`~/`[emacs/lisp/settings.el](emacs/lisp/settings.el) for working with Common
 Lisp, Rust and other programming languages.
 
 Adopted here in 2018, [use-package](https://github.com/jwiegley/use-package)
