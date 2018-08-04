@@ -35,10 +35,10 @@ expressions, and that's a beautiful place to be.
 
 Here's how:
 
-For [Common Lisp programming language](https://lisp-lang.org/), the
+For [Common Lisp programming language](http://lisp-lang.org/), the
 *Superior Lisp Interaction Mode for Emacs*
 ([slime](http://quickdocs.org/slime/)) gets loaded via
-[Quicklisp library manager](https://quicklisp.org/).
+[Quicklisp library manager](https://www.quicklisp.org/).
 
 However, Quicklisp setup is handled via [lisp/Makefile](lisp/Makefile)
 outside of Emacs.  For that, run:
