@@ -9,7 +9,7 @@ Without that commonality, this repo is the next best thing...
 
 ## Emacs
 
-My Emacs configuration begins with `~/`[.emacs](./.emacs), but newer
+My Emacs configuration begins with `~/`[.emacs](emacs/dot.emacs), but newer
 documentation since I started might put this in `~/.emacs.d/init.el`
 instead.  Name of this file is less significant that the rest.
 
