@@ -22,7 +22,7 @@ CACHE_DIR=/var/cache
 
 SLIME_CACHE=${CACHE_DIR}/slime
 
-SBCL_VERSION=1.4.5
+SBCL_VERSION=1.4.10
 BASE_URL=http://sourceforge.net/projects/sbcl/files/sbcl/${SBCL_VERSION}
 ARCH=$(shell uname -s | perl -nwe 'tr/[A-Z]/[a-z]/; print')
 SBCL_BIN=sbcl-${SBCL_VERSION}-x86-64-${ARCH}-binary.tar.bz2
@@ -53,9 +53,14 @@ tags: TAGS
 ref: references
 
 .PHONY: references
+# http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html
+# http://www.lispworks.com/documentation/common-lisp.html
 references:
 	wget -N http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/lang/lisp/doc/cltl/cltl_ht.tgz
-	wget -N ftp://ftp.lispworks.com/pub/software_tools/reference/HyperSpec-7-0.tar.gz
+	wget -N http://ftp.lispworks.com/pub/software_tools/reference/HyperSpec-7-0.tar.gz
+	@echo "Running sudo to finish installation:"
+	sudo tar xfg -C ${LISP_LIB} cltl_ht.tgz
+	sudo tar xfg -C ${LISP_LIB} HyperSpec-7-0.tar.gz
 
 sbcl: ${SBCL_PATH}
 
