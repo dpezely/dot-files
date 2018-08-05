@@ -71,13 +71,13 @@ When viewing Lisp source code, use these key sequences:
 - Ctrl-Meta `(` -- insert a matching pair of parens around marked form
 - Ctrl-W -- cut marked form
 - Ctrl-Y -- paste previous cut
-- Meta-Y -- cycle through *kill-ring* of all previous cuts
+- Meta-Y -- after Ctrl-Y -- cycle through *kill-ring* of all previous cuts
 - Ctrl-X Ctrl-E -- evaluate preceding form
 - Ctrl-Meta-T -- transpose s-expressions; i.e., swap X, Y
 - Ctrl-C Ctrl-D h -- lookup symbol under cursor within language docs (HyperSpec)
 - Ctrl-C % -- raise a form by removing its immediate parent scope
 
-where *form* may be a value or parenthesis-ed expression; *cut* really means
+where *form* may be a value or parenthesized expression; *cut* really means
 remove from current buffer and save in practically infinite "kill ring" from
 which you can then yank (`Ctrl-Y`) and cycle through the kill ring
 (`Meta-Y`).
@@ -85,9 +85,9 @@ which you can then yank (`Ctrl-Y`) and cycle through the kill ring
 The key sequence that will *raise a form by removing its immediate parent scope*
 gives you much power; e.g., place cursor over opening paren of an expression
 within `PROGN`, use the key sequence `C-c %`, and everything within that
-`progn` including the `progn`'s parens go away except for the one.  This
-leaves only the form (or value) of where the cursor was when you invoked
-that key sequence.
+`progn` including the `progn`'s parens go away except for the one with which
+you started the key sequence.  This leaves only the form (or value) of where
+the cursor was when you invoked that key sequence.
 
 That's very useful for thinking in terms of *expressions*, rather than code
 or syntax!
