@@ -11,7 +11,7 @@ Without that commonality, this repo is the next best thing...
 
 My Emacs configuration begins with `~/.emacs`, but newer
 documentation since I started might put this in `~/.emacs.d/init.el`
-instead.  Name of this file is less significant that the rest.
+instead.  Name of this file is less significant than the rest.
 
 All my other elisp files are kept in [~/emacs/lisp/](emacs/lisp/), but if
 you change this location, the corresponding path within
@@ -83,11 +83,13 @@ which you can then yank (`Ctrl-Y`) and cycle through the kill ring
 (`Meta-Y`).
 
 The key sequence that will *raise a form by removing its immediate parent scope*
-gives you much power; e.g., place cursor over opening paren of an expression
-within `PROGN`, use the key sequence `C-c %`, and everything within that
-`progn` including the `progn`'s parens go away except for the one with which
-you started the key sequence.  This leaves only the form (or value) of where
-the cursor was when you invoked that key sequence.
+gives you much power by maintaining structure while editing.
+
+e.g., place cursor over opening paren of an expression within `PROGN`, use
+the key sequence `C-c %`, and everything within that `progn` including the
+`progn`'s parens go away except for the one with which you started the key
+sequence.  This leaves only the form (or value) of where the cursor was when
+you invoked that key sequence.
 
 That's very useful for thinking in terms of *expressions*, rather than code
 or syntax!
@@ -136,3 +138,10 @@ and [play.org/links/lisp](https://play.org/links/lisp).  Today, however, you
 can start with [Lisp-Lang.org](http://lisp-lang.org/).
 
 Similarly for Rust programming language: [play.org/links/rust](https://play.org/links/rust)
+
+Beyond [electric-pair-mode](http://www.emacswiki.org/emacs/ElectricPair) and
+[smartparens](https://github.com/Fuco1/smartparens) used here, other Emacs
+packages for structured manipulation of parenthesis include:
+
+- [AutoPairs](https://www.emacswiki.org/emacs/AutoPairs)
+- [Par Edit](http://emacswiki.org/emacs/ParEdit)

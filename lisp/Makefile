@@ -53,8 +53,9 @@ tags: TAGS
 ref: references
 
 .PHONY: references
-# http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html
 # http://www.lispworks.com/documentation/common-lisp.html
+# http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html but see also:
+# https://web.archive.org/web/20130807175341/http://bc.tech.coop/cltl2-ansi.htm
 references:
 	wget -N http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/lang/lisp/doc/cltl/cltl_ht.tgz
 	wget -N http://ftp.lispworks.com/pub/software_tools/reference/HyperSpec-7-0.tar.gz
