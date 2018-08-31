@@ -36,7 +36,7 @@ TESTING=--eval '(push :testing *features*)'
 DEBUG=--eval '(push :debug *features*)'
 END=--eval '(sb-ext:quit)'
 
-LIBRARIES=hunchentoot split-sequence cl-ppcre fare-csv
+LIBRARIES=hunchentoot split-sequence cl-ppcre fare-csv linedit
 
 LIB_CACHE_DIR=~/.cache/common-lisp
 FASL_DIR=${LIB_CACHE_DIR}/sbcl-*/*/*/${PROJECT_NAME}
@@ -53,15 +53,18 @@ tags: TAGS
 ref: references
 
 .PHONY: references
-# http://www.lispworks.com/documentation/common-lisp.html
-# http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html but see also:
-# https://web.archive.org/web/20130807175341/http://bc.tech.coop/cltl2-ansi.htm
-references:
+references: cltl_ht.tgz HyperSpec-7-0.tar.gz
+	@echo "Running sudo to install Lisp docs in: ${LISP_LIB}"
+	sudo tar zxf cltl_ht.tgz -C ${LISP_LIB} 
+	sudo tar zxf HyperSpec-7-0.tar.gz -C ${LISP_LIB}
+
+# http://www.cs.cmu.edu/Groups/AI/html/cltl/cltl2.html
+cltl_ht.tgz:
 	wget -N http://www.cs.cmu.edu/afs/cs.cmu.edu/project/ai-repository/ai/lang/lisp/doc/cltl/cltl_ht.tgz
+
+# http://www.lispworks.com/documentation/common-lisp.html
+HyperSpec-7-0.tar.gz:
 	wget -N http://ftp.lispworks.com/pub/software_tools/reference/HyperSpec-7-0.tar.gz
-	@echo "Running sudo to finish installation:"
-	sudo tar xfg -C ${LISP_LIB} cltl_ht.tgz
-	sudo tar xfg -C ${LISP_LIB} HyperSpec-7-0.tar.gz
 
 sbcl: ${SBCL_PATH}
 
