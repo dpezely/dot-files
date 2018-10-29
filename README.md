@@ -31,7 +31,7 @@ File paths and environment variables live in OS-specific files such as
 [~/emacs/lisp/MacOSX.el](emacs/lisp/MacOSX.el), which by its filename
 indicates a bit of time has passed since using that one.
 
-### Common Lisp family of programming languages
+### Lisp family of programming languages
 
 While developing in Common Lisp or other dialects such as Scheme, Racket,
 Arc, etc., you should **never** type or remove a single literal paren!
