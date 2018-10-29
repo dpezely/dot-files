@@ -1,5 +1,7 @@
 ;;;; settings.el
 
+(setq-default indent-tabs-mode nil)
+
 (setq inhibit-startup-screen t
       initial-scratch-message nil
       ispell-dictionary "en_CA"
@@ -16,8 +18,6 @@
       same-window-regexps '("^\*sldb sbcl/")
       version-control nil
       delete-old-versions t)
-
-(setq-default indent-tabs-mode nil)
 
 (setq calendar-today-visible-hook 'calendar-star-date
       calendar-view-diary-initially-flag t
@@ -67,7 +67,6 @@
 
 
 ;;; settings for Common Lisp development
-
 (setq lisp-indent-function 'common-lisp-indent-function
       ;;slime-complete-symbol-function 'slime-fuzzy-complete-symbol
       slime-startup-animation nil
@@ -76,7 +75,8 @@
       ;; hyperspec-path "/usr/share/doc/HyperSpec/"
       ;; w3m-command "/usr/local/bin/w3m"
       common-lisp-hyperspec-root (concat "file://" hyperspec-path)
-      common-lisp-hyperspec-symbol-table (concat hyperspec-path "Data/Map_Sym.txt")
+      common-lisp-hyperspec-symbol-table (concat hyperspec-path
+						 "Data/Map_Sym.txt")
 
       ;;See http://www.emacswiki.org/emacs/emacs-w3m
       ;; browse-url-browser-function 'w3m
@@ -251,10 +251,11 @@
     :pin "melpa-stable"
   ;; https://github.com/felipeochoa/rjsx-mode
   :mode (("\\.js[x]?\\'" . rjsx-mode))
-  ;; use eslint-mode for .js and .jsx files
-  :hook javascript-eslint
+  ;; http://codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html
+  ;; :hook javascript-eslint
   :config
-  (define-key rjsx-mode-map (kbd "C-d") nil))
+  (define-key rjsx-mode-map (kbd "C-d") nil)
+  (set-fill-column 79))
 
 (use-package lsp-mode
   ;; Language Server Protocol https://github.com/emacs-lsp/lsp-mode
@@ -264,10 +265,10 @@
   (setq lsp-enable-codeaction t
         lsp-enable-completion-at-point t
         lsp-enable-eldoc t ; non-NIL to display fn args or var doc-string
-        lsp-enable-flycheck t ; non-NIL give overlay of doc-string
+        lsp-enable-flycheck nil ; non-NIL give overlay of doc-string
         lsp-enable-indentation t
         lsp-enable-xref t
-        lsp-ui-doc-enable t
+        lsp-ui-doc-enable nil ; non-NIL for gaudy, sluggish overlay of doc-string
         lsp-ui-flycheck-enable t
         lsp-ui-imenu-enable t
         lsp-ui-peek-enable t

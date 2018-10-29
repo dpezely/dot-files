@@ -228,29 +228,28 @@ argument ARG do it that many times."
   (let ((sentence-end "[;}]"))
     (mark-end-of-sentence 1)))
 
-(defun cargo-process-build-backtrace ()
+(defun cargo-process-test-with-backtrace (nightly backtrace)
   "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
-  (interactive)
+  (interactive "xNightly? \nxBacktrace? ")
   (let ((value (getenv "RUST_BACKTRACE")))
-    (setenv "RUST_BACKTRACE" "t")
-    (let ((cargo-process--command-test (concat cargo-process--command-test
-					       " --verbose")))
+    (when backtrace
+      (setenv "RUST_BACKTRACE" "full"))
+    (when nightly
+      ;; https://github.com/rust-lang/rust/issues/49535
+      (setenv "RUSTFLAGS" "-Z external-macro-backtrace"))
+    (let ((cargo-process--command-test (concat (when nightly "+nightly ")
+                                                cargo-process--command-test
+                                                " --verbose")))
       (cargo-process-test))
     (if value
 	(setenv "RUST_BACKTRACE" value)
       (setenv "RUST_BACKTRACE"))))
 
-(defun cargo-process-build-full-backtrace ()
-  "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
+(defun cargo-process-build-nightly ()
   (interactive)
-  (let ((value (getenv "RUST_BACKTRACE")))
-    (setenv "RUST_BACKTRACE" "full")
-    (let ((cargo-process--command-test (concat cargo-process--command-test
-					       " --verbose")))
-      (cargo-process-test))
-    (if value
-	(setenv "RUST_BACKTRACE" value)
-      (setenv "RUST_BACKTRACE"))))
+  (let ((cargo-process--command-build (concat "+nightly "
+                                              cargo-process--command-build)))
+    (cargo-process-build)))
 
 (defun company-lsp--rust-completion-snippet (item)
   "Function providing snippet with the rust language.
