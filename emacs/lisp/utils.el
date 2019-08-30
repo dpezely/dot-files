@@ -228,10 +228,20 @@ argument ARG do it that many times."
   (let ((sentence-end "[;}]"))
     (mark-end-of-sentence 1)))
 
+(defun cargo-process-run-with-backtrace ()
+  "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
+  (interactive)
+  (let ((trace (getenv "RUST_BACKTRACE")))
+    (setenv "RUST_BACKTRACE" "full")
+    (let ((cargo-process--command-run (concat cargo-process--command-run
+                                               " --verbose")))
+      (cargo-process-run))
+    (setenv "RUST_BACKTRACE" trace)))
+
 (defun cargo-process-test-with-backtrace (nightly backtrace)
   "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
   (interactive "xNightly? \nxBacktrace? ")
-  (let ((value (getenv "RUST_BACKTRACE")))
+  (let ((trace (getenv "RUST_BACKTRACE")))
     (when backtrace
       (setenv "RUST_BACKTRACE" "full"))
     (when nightly
@@ -241,9 +251,7 @@ argument ARG do it that many times."
                                                 cargo-process--command-test
                                                 " --verbose")))
       (cargo-process-test))
-    (if value
-	(setenv "RUST_BACKTRACE" value)
-      (setenv "RUST_BACKTRACE"))))
+    (setenv "RUST_BACKTRACE" trace)))
 
 (defun cargo-process-build-nightly ()
   (interactive)
@@ -279,3 +287,16 @@ argument ARG do it that many times."
 	 (day (cadr date))
 	 (year (caddr date)))
     (insert (format "%d-%d-%d" year month day))))
+
+(defun rust-convert-if-let-to-match ()
+  "Convert Rust language `if let` to `match` syntax"
+  (interactive)
+  (if (search-forward-regexp (concat
+                              "if let \\([^=]+\\) = \\([^{]+\\){"
+                              "\\([^}]+\\)"
+                              "} else {"
+                              "\\([^}]+\\)"))
+      (replace-match (concat
+                      "match \\2{\n"
+                      "\\1 => \\3,"
+                      "Err(e) => \\4"))))

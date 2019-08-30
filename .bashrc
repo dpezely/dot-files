@@ -50,19 +50,25 @@ case $OSTYPE in
 	# e.g., ._foo
 	export COPYFILE_DISABLE=1
 	export COPY_EXTENDED_ATTRIBUTES_DISABLE=1
-	PATH=${PATH}:/sw/bin:/Local/bin
+        # for HomeBrew to supersede macOS built-ins:
+        PATH=/usr/local/bin:$PATH
+        # for `aws` command from: pip3 install awscli
+        PATH=~/Library/Python/3.7/bin:$PATH
+        # Prevent homebrew from overruling Rust, because this will be be latest/official:
+        PATH=~/.cargo/bin:$PATH
 	;;
     *bsd)
 	;;
     linux*)
 	PATH="${PATH}:~/.cargo/bin"
 	# https://doc.rust-lang.org/book/second-edition/ch09-01-unrecoverable-errors-with-panic.html
-        if [ $(which rustc) ]; then
-	    export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
-	    export RUST_BACKTRACE=1
-        fi
 	;;
 esac
+
+if [ ! -z "$(which rustc)" ]; then
+    export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+    export RUST_BACKTRACE=1
+fi
 
 if [ -z "$EMACS" ]; then
 	export EDITOR=vi
@@ -71,3 +77,7 @@ else
 fi
 
 alias ssh_nohosts='ssh -o UserKnownHostsFile=/dev/null'
+
+# RipGrep:
+# reg-ex pattern follows, then subdirectory of where to begin search:
+alias rg_cython='rg --files-with-matches --glob "*.{py,pxd,pyx,h,c}" -e'

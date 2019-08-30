@@ -4,6 +4,8 @@
 
 (setq inhibit-startup-screen t
       initial-scratch-message nil
+      visible-bell t
+      ;;ring-bell-function #'(lambda () nil)
       ispell-dictionary "en_CA"
       scroll-step 2
       display-time-day-and-date t
@@ -15,7 +17,7 @@
       pop-up-windows nil
       pop-up-frames nil
       same-window-buffer-names '("*shell*" "*slime-scratch*" "*xref*")
-      same-window-regexps '("^\*sldb sbcl/")
+      same-window-regexps '("^\\*sldb sbcl/")
       version-control nil
       delete-old-versions t)
 
@@ -26,7 +28,7 @@
       diary-number-of-entries 5
       diary-file (expand-file-name "~/etc/SCHEDULE"))
 
-;; Have diary mode notify me of any appointments:
+;; Have diary mode notify of any appointments:
 (if (< emacs-major-version 24)
     (add-hook 'diary-hook 'appt-make-list)
     (appt-activate 1))
@@ -146,37 +148,21 @@
 (use-package cargo
   ;; Hook for rust language to access build manager
   :after rust-mode
+  :hook ((rust-mode . cargo-minor-mode)
+         (cargo-process-mode . visual-line-mode))
   :config
-  (add-hook 'rust-mode-hook #'cargo-minor-mode)
-  (add-hook 'cargo-process-mode-hook #'visual-line-mode))
-;; Ironically, there is no file mode for rust's Cargo.toml files
-(add-to-list 'auto-mode-alist '("Cargo.toml\\'" . conf-mode))
+  ;; Ironically, there is no file mode for rust's Cargo.toml files
+  (add-to-list 'auto-mode-alist '("Cargo.toml\\'" . conf-mode)))
 
 (use-package company
-  ;; for TAB key word completion, used by racer
-  :config
-  (add-hook 'racer-mode-hook #'company-mode))
+    ;; for TAB key word completion, used by racer
+    :hook ((racer-mode . company-mode)
+           (rust-mode . company-mode)))
 
-(use-package company-lsp
-  ;; facilitates completion-at-point (C-M-i)
-  :after company
-  :config
-  (setq company-lsp-enable-recompletion t)
-  (lsp-define-stdio-client lsp-rust "rust" #'lsp-rust--get-root nil
-                           :command-fn #'lsp-rust--rls-command
-                           :initialize #'lsp-rust--initialize-client)
-  (push 'company-lsp company-backends))
-
-(use-package eglot
-    :disabled
-  ;; Requires Emacs-26.  Use this OR lsp-mode, but not both.
-  ;; Emacs polyglot, a lightweight LSP https://github.com/joaotavora/eglot
-  ;; See also lsp-mode.
-  ;; (Works with project.el)
-  ;; M-x eglot-shutdown says bye-bye to the server
-  :bind
-  (define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
-  (define-key eglot-mode-map (kbd "M-.") 'xref-find-definitions))
+(use-package cython-mode
+    ;; Cython programming language
+    :after flycheck
+    :hook (cython-mode . flycheck-mode))
 
 (use-package elixir-mode
     :disabled
@@ -248,6 +234,7 @@
   :after org)
 
 (use-package rjsx-mode
+    :disabled
     :pin "melpa-stable"
   ;; https://github.com/felipeochoa/rjsx-mode
   :mode (("\\.js[x]?\\'" . rjsx-mode))
@@ -260,13 +247,14 @@
 (use-package lsp-mode
   ;; Language Server Protocol https://github.com/emacs-lsp/lsp-mode
   ;; See also eglot, an alternative and lighter LSP implementation
-  :config
+  :config             ; https://github.com/emacs-lsp/lsp-mode#settings
   ;;(with-eval-after-load 'lsp-mode (require 'lsp-ui-flycheck))
   (setq lsp-enable-codeaction t
         lsp-enable-completion-at-point t
         lsp-enable-eldoc t ; non-NIL to display fn args or var doc-string
         lsp-enable-flycheck nil ; non-NIL give overlay of doc-string
         lsp-enable-indentation t
+        ;;lsp-enable-snippet nil
         lsp-enable-xref t
         lsp-ui-doc-enable nil ; non-NIL for gaudy, sluggish overlay of doc-string
         lsp-ui-flycheck-enable t
@@ -276,29 +264,21 @@
         lsp-ui-sideline-show-code-actions t ; non-NIL for hint to fix code
         ;; non-NIL enables display of symbols information; NIL does
         ;; _not_ impact display of flycheck diagnostics or Code Actions:
-        lsp-ui-sideline-show-hover nil))
-
-;;FIXME: enable highlight of fn param like SLIME does
-(use-package lsp-rust
-  ;; Language Server Protocol for Rust language
-  ;; https://github.com/emacs-lsp/lsp-rust
-  ;; See also: https://github.com/rust-lang-nursery/rls
-  ;; and set 'lsp-rust-rls-command or environment variable RLS_ROOT
-  :after lsp-mode
-  :config
-  (add-hook 'rust-mode-hook #'lsp-rust-enable)
-  (setq lsp-rust-rls-command '("rustup" "run" "stable" "rls")))
+        lsp-ui-sideline-show-hover nil)
+  :commands
+  (lsp lsp-deferred))
 
 (use-package lsp-ui
   ;; https://github.com/emacs-lsp/lsp-ui
-  :config
-  (add-hook 'lsp-mode-hook #'lsp-ui-mode)
+  :hook (lsp-mode . lsp-ui-mode)
   :custom-face                      ;see also: M-x list-colors-display
   (lsp-ui-sideline-current-symbol ((t :foreground "brown"
                                       :weight ultra-bold
                                       :box (:line-width -1 :color "brown")
                                       :height 0.99)))
   (lsp-ui-sideline-code-action ((t :foreground "orange"))))
+
+(use-package magit)                     ; Git
 
 (use-package markdown-mode
     ;;; https://jblevins.org/projects/markdown-mode/
@@ -309,7 +289,7 @@
   ;; Allow collapsing subtrees for easy nav:
   ;;(outline-minor-mode)
   ;; undo with M-x show-subtree or show-all:
-  ;;(hide-sublevels 1)
+  ;;(outline-hide-sublevels 2)
   (auto-fill-mode)
   (electric-quote-local-mode 'disable)
   :custom-face                      ;see also: M-x list-colors-display
@@ -333,67 +313,69 @@
 
 (use-package org
   :config
-  (setq org-export-author-info nil
-        ;;org-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
-        org-export-email-info nil
-        org-export-time-stamp-file nil
-        org-export-headline-levels 2
-        org-use-sub-superscripts nil
-        org-emphasis-alist (delete-if (lambda (x)
+  (setq org-emphasis-alist (delete-if (lambda (x) ;omit +strike-through+
                                         (equal (car x) "+"))
                                       org-emphasis-alist)
+        ;; Use back-ticks (accent grave mark) for code, as with Markdown:
+        org-emphasis-alist (cons '("`" org-code verbatim) org-emphasis-alist)
+        org-export-author-info nil
+        org-export-copy-to-kill-ring nil
+        org-export-email-info nil
+        org-export-headline-levels 2
         org-export-html-coding-system 'utf-8
-        org-html-head (concat "<link rel=\"stylesheet\""
-                              " type=\"text/css\" href=\"style.css\" />")
         ;; org-export-html-style-extra
         ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
         ;; 	body {font-family:sans-serif}
         ;; 	a {text-decoration:none}
         ;; 	#table-of-contents {font-size:75%}
         ;; 	/*]]>*/--></style>"
+        org-export-time-stamp-file nil
+        ;;org-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
+        org-html-head (concat "<link rel=\"stylesheet\""
+                              " type=\"text/css\" href=\"style.css\" />")
         org-html-postamble nil
-        org-export-copy-to-kill-ring nil))
+        org-use-sub-superscripts nil))
 
 (use-package org-present
     :disabled
   ;; Use org-mode for slide show presentation
   :after org-mode
-  :config
-  (add-hook 'org-present-mode-hook
-            (lambda ()
-              (org-present-big)
-              (org-display-inline-images)))
-  (add-hook 'org-present-mode-quit-hook
-            (lambda ()
-              (org-present-small)
-              (org-remove-inline-images))))
+  :hook ((org-present-mode . (lambda ()
+                               (org-present-big)
+                               (org-display-inline-images)))
+         (org-present-mode-quit . (lambda ()
+                                    (org-present-small)
+                                    (org-remove-inline-images)))))
+
+(use-package python
+    ;; "The package is 'python, but the mode is 'python-mode"
+    :after lsp-mode
+    :hook (python-mode . lsp-deferred))
 
 (use-package racer
-  ;; Provides M-. for Rust language
-  :after 'rust-mode
-  :config
-  (add-hook 'rust-mode-hook #'racer-mode))
+    ;; Provides M-. and M-, support for Rust language
+    ;; Requires `racer` executable, which as of 2019-09-29 requires Rust Nightly
+    ;; https://github.com/racer-rust/emacs-racer
+    ;; https://github.com/racer-rust/racer
+  :hook ((rust-mode . racer-mode)
+         (racer-mode . eldoc-mode)))
 
 (use-package rust-mode
-  ;; For LINT checking, consider installing Rust's Clippy.
-  ;; Run: rustup install nightly && cargo +nightly install clippy
-  ;; then invoke with: M-x cargo-process-clippy
-  :after smartparens
+  ;; For LINT checks, run Rust's Clippy; invoke with: M-x cargo-process-clippy
+  :after (company-mode lsp-mode racer-mode smartparens-mode)
+  :hook ((rust-mode . lsp-deferred)
+         (rust-mode . flycheck-mode)
+         (rust-mode . smartparens-mode)
+         (rust-mode . (lambda () (vc-mode-line nil))))
   :config
-  ;; Requires the Language Server Protocol (LSP) be enabled,
-  ;; but sometimes in emacs-25.2 fails with
-  ;; "Suspicious state from syntax checker rust-cargo..."
-  ;; When viewing rust code, use: M-x flycheck-buffer
-  (add-hook 'rust-mode-hook #'flycheck-mode)
-  (add-hook 'rust-mode-hook #'smartparens-mode)
-  (add-hook 'rust-mode-hook #'(lambda () (vc-mode-line nil)))
   ;; FIXME: insert matching pairs of < and >
   ;; (sp-with-modes '(rust-mode)
   ;;   (sp-local-pair "<" ">" :actions '(insert navigate)))
-  (setq cargo-process--command-clippy "+nightly clippy"
+  (setq cargo-process--command-clippy "clippy" ;or "+nightly clippy"
         company-tooltip-align-annotations t
         c-syntactic-indentation t
-        c-basic-offset 2))
+        c-basic-offset 2
+        lsp-rust-rls-server-command '("rustup" "run" "stable" "rls")))
 
 (use-package rust-playground
   ;; Not quite a REPL, similar to *slime-scratch* as code sandbox
@@ -411,6 +393,7 @@
 ;; 				(paren-toggle-matching-quoted-paren 1)
 ;; 				(show-paren-mode 'disable)))
 
+;; https://github.com/Fuco1/smartparens
 ;; Sample instructions for new package installer:
 ;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
 (use-package smartparens)
@@ -420,3 +403,5 @@
 	      (set-fill-column 76) 
               (electric-quote-local-mode)
 	      (visual-line-mode)))
+
+(use-package yasnippet)                 ; for 'lsp-enable-snippet

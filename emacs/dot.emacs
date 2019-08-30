@@ -7,7 +7,7 @@
 (load custom-file t)
 
 (cond ((eq window-system 'ns)		; Cocoa aka NextStep
-       (load "MacOSX"))
+       (load "macos"))
       ((eq window-system 'mac)
        ;; These include fixed value screen sizes:
        (if (boundp 'aquamacs-version)
@@ -48,6 +48,7 @@
 (load "utils")
 (load "settings")
 (load "keyboard")
+(load "markdown-to-html5" t)
 
 ;; Use QuickLisp's slime instead of: (require 'slime)
 ;; Then, periodically eval this to get updates:

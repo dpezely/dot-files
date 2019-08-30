@@ -87,9 +87,11 @@
 	  (lambda ()
 	    (define-key rust-mode-map (kbd "TAB") 'company-indent-or-complete-common)
             (define-key rust-mode-map (kbd "C-c C-c b") 'cargo-process-build)
-            (define-key rust-mode-map (kbd "C-c C-c n") 'cargo-process-build-nightly)
 	    (define-key rust-mode-map (kbd "C-c C-c c") 'cargo-process-clippy)
+            (define-key rust-mode-map (kbd "C-c C-c n") 'cargo-process-build-nightly)
 	    (define-key rust-mode-map (kbd "C-c C-c t") 'cargo-process-test-with-backtrace)
+            (define-key rust-mode-map (kbd "C-c C-c C-r") 'cargo-process-run-with-backtrace)
+            (define-key rust-mode-map (kbd "C-c C-c r") 'cargo-process-run)
 	    (define-key rust-mode-map (kbd "C-M-;") 'mark-rust-statement)))
 
 (add-hook 'scheme-mode-hook

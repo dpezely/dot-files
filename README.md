@@ -27,9 +27,32 @@ method, yet speed was never a concern.  It's used here for keeping
 configuration tidy.  However, this is a work in progress.
 
 File paths and environment variables live in OS-specific files such as
-[~/emacs/lisp/ubuntu.el](emacs/lisp/ubuntu.el) or
-[~/emacs/lisp/MacOSX.el](emacs/lisp/MacOSX.el), which by its filename
-indicates a bit of time has passed since using that one.
+[~/emacs/lisp/ubuntu.el](emacs/lisp/ubuntu.el) for current LTS edition or
+[~/emacs/lisp/macos.el](emacs/lisp/macos.el), updated for Mojave/10.14.
+
+### Compiling Emacs Locally
+
+Browse [official repo](http://git.savannah.gnu.org/cgit/emacs.git) for
+relevant tag such as `emacs-26.3` because you probably don't want HEAD.
+
+Install dependencies:
+
+    sudo apt-get install build-essential
+	sudo apt-get build-dep emacs
+
+Or use individual packages from the `build-dep` if on a different distro:
+
+	sudo apt-get install build-essential texinfo \
+      libx11-dev libxpm-dev libjpeg-dev libpng-dev libgif-dev libtiff-dev \
+      libgtk2.0-dev libncurses5-dev gnutls-dev libgtk-3-dev
+
+After either of those above, run:
+
+    git clone -b emacs-26.3 git://git.savannah.gnu.org/emacs.git
+    cd emacs/
+	./autogen.sh && ./configure && make
+
+    sudo make install
 
 ### Lisp family of programming languages
 
@@ -110,12 +133,8 @@ source file, simply type:
 
 - Ctrl-C Ctrl-C b -- equivalent to `cargo build`
 - Ctrl-C Ctrl-C t -- run tests
-- Ctrl-C Ctrl-C c -- equivalent to `cargo +nightly clippy`
+- Ctrl-C Ctrl-C c -- equivalent to `cargo clippy`
 - Meta-X rust-playground -- similar to Lisp's `*slime-scratch*` buffer
-
-Assuming that you've installed Rust Clippy separately via
-`rustup component add clippy-preview --toolchain=nightly` (current as of
-rustc 1.28.0 in August 2018), the key sequence of `C-c C-c c` will work.
 
 Since typing `Meta-X rust-playground` is a bit long, simply type enough of
 each word to be unique; e.g., type `ru-playg` then tap TAB or SPACE key to
@@ -124,11 +143,7 @@ complete.
 ### Other languages
 
 Some support via `use-package` for these programming languages and editor
-modes are accommodated:
-
-- Contemporary JavaScript (ECMAScript 2015, ES6) as JSX
-- Erlang (minimally used since converted from older config)
-- Elixir (converted from older config, but not tested)
+modes are accommodated, but ignore any marked `:disabled`.
 
 ## Further Reading
 
