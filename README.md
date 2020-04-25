@@ -3,7 +3,7 @@ dot files
 
 In an earlier era of shared hosts, you could simply look at my home
 directory.  Any file or subdirectory that was readable to the world or a
-group in which we were both members, was available for you to browse freely.
+group in which we were both members was available for you to browse freely.
 
 Without that commonality, this repo is the next best thing...
 

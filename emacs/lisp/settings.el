@@ -5,7 +5,6 @@
 (setq inhibit-startup-screen t
       initial-scratch-message nil
       visible-bell t
-      ;;ring-bell-function #'(lambda () nil)
       ispell-dictionary "en_CA"
       scroll-step 2
       display-time-day-and-date t
@@ -16,27 +15,11 @@
       ;;truncate-lines t
       pop-up-windows nil
       pop-up-frames nil
-      same-window-buffer-names '("*shell*" "*slime-scratch*" "*xref*")
-      same-window-regexps '("^\\*sldb sbcl/")
+      same-window-buffer-names '("*compilation*" "*shell*"
+                                 "*slime-scratch*" "*xref*")
+      same-window-regexps '("^\\*sldb sbcl/" "^magit:")
       version-control nil
       delete-old-versions t)
-
-(setq calendar-today-visible-hook 'calendar-star-date
-      calendar-view-diary-initially-flag t
-      diary-display-function 'diary-fancy-display
-      diary-list-entries-hook 'diary-include-other-diary-files
-      diary-number-of-entries 5
-      diary-file (expand-file-name "~/etc/SCHEDULE"))
-
-;; Have diary mode notify of any appointments:
-(if (< emacs-major-version 24)
-    (add-hook 'diary-hook 'appt-make-list)
-    (appt-activate 1))
-
-(calendar-set-date-style 'european)
-
-(add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
-(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 
 ;; (setq Man-switches (concat "-M " 
 ;; 			   (let ((existing (getenv "MANPATH")))
@@ -130,10 +113,17 @@
 ;;(swank:create-server :port 4005 :dont-close t)
 
 
-;;; https://github.com/jwiegley/use-package
-
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
+
+;;; https://github.com/jwiegley/use-package
+
+;; https://github.com/remvee/android-mode.git
+(use-package android-mode
+    :disabled
+  :custom
+  ;; Ubuntu-specific, or just setenv ANDROID_HOME
+  (android-mode-sdk-dir "/home/android-sdk"))
 
 ;;(add-to-list 'auto-mode-alist '("\\.arc\\'" . arc-mode))
 
@@ -145,13 +135,44 @@
 	      (set-fill-column 79)
 	      (auto-fill-mode 'disable)))
 
+(use-package calendar
+  :init
+  (setq calendar-today-visible-hook 'calendar-star-date
+        calendar-view-diary-initially-flag t
+        diary-display-function 'diary-fancy-display
+        diary-list-entries-hook 'diary-include-other-diary-files
+        diary-number-of-entries 5
+        diary-file (expand-file-name "~/etc/SCHEDULE"))
+  (appt-activate 1)            ; notify of appointments during the day
+  :config
+  (calendar-set-date-style 'european)
+  (add-hook 'diary-list-entries-hook 'diary-include-other-diary-files)
+  (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+  ;; Hack to fix local holidays in Emacs 25.2 and 26.3, possibly earlier;
+  ;; Force append without modifying pointers to original head of list.
+  ;; FIXME: remove when duplicates appear in *Fancy Diary Entries* buffer:
+  (setf (nthcdr (length calendar-holidays) calendar-holidays) holiday-other-holidays)
+  :custom
+  (holiday-other-holidays
+   ;; New Year's Day, Good Friday and Christmas are statutory
+   ;; holidays in BC and already appear in Emacs default calendar
+   '((holiday-float 2 1 3 "Family Day - statutory") ; since 2013 in BC
+     (holiday-float 5 1 1 "Victoria Day" (- 24 6)) ; on or BEFORE 24th
+     (holiday-fixed 7 1 "Canada Day")
+     (holiday-float 8 1 1 "BC Day - statutory")
+     (holiday-float 9 1 1 "Labour Day")
+     (holiday-float 10 1 2 "Thanksgiving in Canada")
+     (holiday-fixed 11 11 "Rememberance Day")
+     (next-major-lunar-phase))))
+
 (use-package cargo
   ;; Hook for rust language to access build manager
   :after rust-mode
   :hook ((rust-mode . cargo-minor-mode)
          (cargo-process-mode . visual-line-mode))
   :config
-  ;; Ironically, there is no file mode for rust's Cargo.toml files
+  ;; There's only a "beta" toml-mode since 2016 and as of end of 2019:
+  ;; https://github.com/dryman/toml-mode.el
   (add-to-list 'auto-mode-alist '("Cargo.toml\\'" . conf-mode)))
 
 (use-package company
@@ -210,13 +231,13 @@
         erlang-compile-extra-opts       'erlang-mapcar-paths))
 
 (use-package flycheck
+    :disabled
   ;; Use eslint for ECMAScript 2015 (ES6) but flycheck for everything else
   ;; http://www.flycheck.org/en/manual/latest/index.html
-  :config
-  (setq-default flycheck-disabled-checkers (append
-                                            flycheck-disabled-checkers
-                                            '(javascript-jshint json-jsonlist))
-                flycheck-temp-prefix ".flycheck"))
+  :custom
+  (flycheck-disabled-checkers (append flycheck-disabled-checkers
+                                      '(javascript-jshint json-jsonlist)))
+  (flycheck-temp-prefix ".flycheck"))
 
 (use-package gh-md
     :disabled
@@ -233,42 +254,56 @@
   ;;; Convert html to org format text
   :after org)
 
-(use-package rjsx-mode
-    :disabled
-    :pin "melpa-stable"
-  ;; https://github.com/felipeochoa/rjsx-mode
-  :mode (("\\.js[x]?\\'" . rjsx-mode))
-  ;; http://codewinds.com/blog/2015-04-02-emacs-flycheck-eslint-jsx.html
-  ;; :hook javascript-eslint
-  :config
-  (define-key rjsx-mode-map (kbd "C-d") nil)
-  (set-fill-column 79))
+;; FIXME: LSP for Android?
+;; https://github.com/fwcd/KotlinLanguageServer
+;; https://github.com/remvee/android-mode
+;; https://github.com/fernando-jascovich/android-env.el
+;; https://github.com/emacs-lsp/lsp-mode
+;; This requires setting JAVA_HOME such as via helper script as
+;; /usr/local/bin/kotlin-language-server or something in PATH.  Otherwise,
+;; *lsp-log* complains `lsp-kotlin-language-server-path` not in path.
+;; Beyond that, there are lots of broken references because it doesn't
+;; resolve Android SDK jars, even with android-mode.
+;; (use-package kotlin-mode
+;;     :after lsp
+;;     :hook
+;;     (kotlin-mode . lsp-deferred)
+;;     (kotlin-mode . android-mode))
+(use-package kotlin-mode)
 
 (use-package lsp-mode
   ;; Language Server Protocol https://github.com/emacs-lsp/lsp-mode
-  ;; See also eglot, an alternative and lighter LSP implementation
-  :config             ; https://github.com/emacs-lsp/lsp-mode#settings
+  ;; Beware that their changelog doesn't include all changes to variable
+  ;; names, and not all changes seem to come with deprecation warnings.
+  ;; See also eglot as a more lightweight LSP client.
+  ;;:config             ; https://github.com/emacs-lsp/lsp-mode#settings
   ;;(with-eval-after-load 'lsp-mode (require 'lsp-ui-flycheck))
-  (setq lsp-enable-codeaction t
-        lsp-enable-completion-at-point t
-        lsp-enable-eldoc t ; non-NIL to display fn args or var doc-string
-        lsp-enable-flycheck nil ; non-NIL give overlay of doc-string
-        lsp-enable-indentation t
-        ;;lsp-enable-snippet nil
-        lsp-enable-xref t
-        lsp-ui-doc-enable nil ; non-NIL for gaudy, sluggish overlay of doc-string
-        lsp-ui-flycheck-enable t
-        lsp-ui-imenu-enable t
-        lsp-ui-peek-enable t
-        lsp-ui-sideline-enable t  ; non-NIL overlays messages at right
-        lsp-ui-sideline-show-code-actions t ; non-NIL for hint to fix code
-        ;; non-NIL enables display of symbols information; NIL does
-        ;; _not_ impact display of flycheck diagnostics or Code Actions:
-        lsp-ui-sideline-show-hover nil)
+  :custom
+  (lsp-enable-completion-at-point t)
+  (lsp-eldoc-enable-hover t) ; non-NIL displays fn args or var doc-string
+  (lsp-enable-indentation t)
+  ;;(lsp-enable-snippet nil)
+  (lsp-enable-xref t)
+  (lsp-eldoc-enable-hover nil) ; non-NIL for gaudy, sluggish overlay of doc-string
+  (lsp-enable-imenu t)
+  (lsp-ui-sideline-enable t)  ; non-NIL overlays messages at right
+  (lsp-ui-sideline-show-code-actions t) ; non-NIL for hint to fix code
+  ;; non-NIL enables display of symbols information; NIL does
+  ;; _not_ impact display of flycheck diagnostics or Code Actions:
+  (lsp-ui-sideline-show-hover nil)
   :commands
   (lsp lsp-deferred))
 
+(use-package eglot
+    :disabled
+    ;; Emacs-polyglot is a Language Server Protocol client.
+    ;; https://github.com/joaotavora/eglot
+    ;; M-x eglot-disconnect when background compilation consumes too
+    ;; much CPU such as when revisiting old projects to borrow code.
+    :hook (rust-mode . eglot-ensure))
+
 (use-package lsp-ui
+    :disabled
   ;; https://github.com/emacs-lsp/lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom-face                      ;see also: M-x list-colors-display
@@ -278,20 +313,21 @@
                                       :height 0.99)))
   (lsp-ui-sideline-code-action ((t :foreground "orange"))))
 
-(use-package magit)                     ; Git
+(use-package magit                      ; Git
+  :config
+  (magit-auto-revert-mode 0))
 
 (use-package markdown-mode
     ;;; https://jblevins.org/projects/markdown-mode/
     :pin "melpa-stable"
   :commands (markdown-mode gfm-mode)
   :mode (("\\.md\\'" . markdown-mode))
-  :config
-  ;; Allow collapsing subtrees for easy nav:
-  ;;(outline-minor-mode)
-  ;; undo with M-x show-subtree or show-all:
-  ;;(outline-hide-sublevels 2)
-  (auto-fill-mode)
-  (electric-quote-local-mode 'disable)
+  :hook
+  (markdown-mode . (lambda ()
+                     (auto-fill-mode)
+                     (electric-quote-local-mode 0)
+                     ;; Effectively no-op when under :confg
+                     (markdown-hide-sublevel 2)))
   :custom-face                      ;see also: M-x list-colors-display
   (markdown-header-face-1 ((t (:inherit markdown-header-face
                                         :underline t
@@ -300,7 +336,10 @@
                                         :underline t
                                         :foreground "orange"))))
   (markdown-header-face-3 ((t (:inherit markdown-header-face
-                                        :foreground "salmon")))))
+                                        :foreground "salmon"))))
+  :bind (("\C-c2" . markdown-hide-sublevel2)
+         ("\C-c\C-a" . markdown-show-all)
+         ("\C-c\C-h" . outline-hide-subtree)))
 
 (use-package markdown-mode+
     :disabled
@@ -316,25 +355,27 @@
   (setq org-emphasis-alist (delete-if (lambda (x) ;omit +strike-through+
                                         (equal (car x) "+"))
                                       org-emphasis-alist)
+        ;; FIXME:
         ;; Use back-ticks (accent grave mark) for code, as with Markdown:
-        org-emphasis-alist (cons '("`" org-code verbatim) org-emphasis-alist)
-        org-export-author-info nil
-        org-export-copy-to-kill-ring nil
-        org-export-email-info nil
-        org-export-headline-levels 2
-        org-export-html-coding-system 'utf-8
-        ;; org-export-html-style-extra
-        ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
-        ;; 	body {font-family:sans-serif}
-        ;; 	a {text-decoration:none}
-        ;; 	#table-of-contents {font-size:75%}
-        ;; 	/*]]>*/--></style>"
-        org-export-time-stamp-file nil
-        ;;org-export-with-toc nil ;;Instead, use: #+OPTIONS: toc:nil 
-        org-html-head (concat "<link rel=\"stylesheet\""
-                              " type=\"text/css\" href=\"style.css\" />")
-        org-html-postamble nil
-        org-use-sub-superscripts nil))
+        org-emphasis-alist (cons '("`" org-code verbatim) org-emphasis-alist))
+  :custom
+  (org-export-author-info nil)
+  (org-export-copy-to-kill-ring nil)
+  (org-export-email-info nil)
+  (org-export-headline-levels 2)
+  (org-export-html-coding-system 'utf-8)
+  ;; (org-export-html-style-extra
+  ;;    "<style type=\"text/css\"><!--/*--><![CDATA[/*><!--*/
+  ;; 	body {font-family:sans-serif}
+  ;; 	a {text-decoration:none}
+  ;; 	#table-of-contents {font-size:75%}
+  ;; 	/*]]>*/--></style>")
+  (org-export-time-stamp-file nil)
+  ;;(org-export-with-toc nil) ;;Instead, use: #+OPTIONS: toc:nil
+  (org-html-head (concat "<link rel=\"stylesheet\""
+                         " type=\"text/css\" href=\"style.css\" />"))
+  (org-html-postamble nil)
+  (org-use-sub-superscripts nil))
 
 (use-package org-present
     :disabled
@@ -349,59 +390,107 @@
 
 (use-package python
     ;; "The package is 'python, but the mode is 'python-mode"
+    ;; https://github.com/palantir/python-language-server
+    ;; pip3 install 'python-language-server[all]'
     :after lsp-mode
     :hook (python-mode . lsp-deferred))
 
 (use-package racer
     ;; Provides M-. and M-, support for Rust language
-    ;; Requires `racer` executable, which as of 2019-09-29 requires Rust Nightly
+    ;; Requires `racer` executable, which as of 2019-12-10 requires Rust Nightly:
+    ;; cargo +nightly install racer
     ;; https://github.com/racer-rust/emacs-racer
     ;; https://github.com/racer-rust/racer
   :hook ((rust-mode . racer-mode)
          (racer-mode . eldoc-mode)))
 
+;; FIXME:
+;; https://github.com/jsalzbergedu/etoile-emacs/blob/b72e67b27326e2ca48e46cd89e4c522de4dd612e/etoile-programming/etoile-programming.el#L679
+
+;; (use-package rustic
+;;   :demand t
+;;   :after rust-mode
+;;   :config
+;;   (add-hook 'rustic-mode-hook 'prog-minor-modes-common)
+;;   (add-hook 'rustic-mode-hook (lambda ()
+;;                                 (add-to-list 'flycheck-checkers 'lsp-ui)))
+;;   (add-hook 'rustic-mode-hook 'lsp)
+;;   (sp-with-modes '(rustic-mode)
+;;     (sp-local-pair "'" "'"
+;;                    :unless '(sp-in-comment-p sp-in-string-quotes-p sp-in-rust-lifetime-context)
+;;                    :post-handlers'(:rem sp-escape-quotes-after-insert))
+;;     (sp-local-pair "<" ">"
+;;                    :when '(sp-rust-filter-angle-brackets)
+;;                    :skip-match 'sp-rust-skip-match-angle-bracket))
+;;
+;;   ;; Rust has no sexp suffices.  This fixes slurping
+;;   ;; (|foo).bar -> (foo.bar)
+;;   (add-to-list 'sp-sexp-suffix (list #'rustic-mode 'regexp "")))
+
 (use-package rust-mode
+  ;; Rust-stable includes `rls`.
+  ;; https://github.com/rust-lang/rls
   ;; For LINT checks, run Rust's Clippy; invoke with: M-x cargo-process-clippy
   :after (company-mode lsp-mode racer-mode smartparens-mode)
   :hook ((rust-mode . lsp-deferred)
          (rust-mode . flycheck-mode)
          (rust-mode . smartparens-mode)
-         (rust-mode . (lambda () (vc-mode-line nil))))
+         (rust-mode . omit-version-control-mode-line))
   :config
-  ;; FIXME: insert matching pairs of < and >
-  ;; (sp-with-modes '(rust-mode)
-  ;;   (sp-local-pair "<" ">" :actions '(insert navigate)))
-  (setq cargo-process--command-clippy "clippy" ;or "+nightly clippy"
-        company-tooltip-align-annotations t
+  (sp-with-modes '(rust-mode)
+    (sp-local-pair "<" ">"
+                   :when '(sp-rust-filter-angle-brackets)
+                   :skip-match 'sp-rust-skip-match-angle-bracket
+                   :actions '(insert navigate)))
+  (setq company-tooltip-align-annotations t
+        ;;cargo-process--command-clippy "+nightly clippy"
+        ;;(lsp-rust-rls-server-command '("rustup" "run" "stable" "rls"))
         c-syntactic-indentation t
-        c-basic-offset 2
-        lsp-rust-rls-server-command '("rustup" "run" "stable" "rls")))
+        c-basic-offset 2)
+  ;; FIXME: key-bindings here seem to be ignored
+  :bind (("C-c C-c b" . cargo-process-build)
+         ("C-c C-c n" . cargo-process-build-nightly)
+         ("C-c C-c c" . cargo-process-clippy)
+         ("C-c C-c r" . cargo-process-run)
+         ("C-c C-c t" . cargo-process-test)
+         ("C-M-;" . mark-rust-statement)))
 
 (use-package rust-playground
-  ;; Not quite a REPL, similar to *slime-scratch* as code sandbox
+  ;; Not quite a REPL but similar to *slime-scratch* as code sandbox
   ;; https://github.com/grafov/rust-playground
   ;; Start via: M-x rust-playground
   ;; when prompted for comment syntax, this is for .toml file, so use #
   ;; For sharing like gist: M-x rust-playpen-region or -buffer
   ;; Try: M-x rust-playground-download
   :after rust-mode
-  :config
-  (setq rust-playground-basedir "/tmp/rust-playground"))
+  :custom
+  (rust-playground-basedir "/tmp/rust-playground"))
 
 ;; (add-hook 'scheme-mode-hook #'(lambda () 
 ;; 				(setq font-lock-maximum-decoration t)
 ;; 				(paren-toggle-matching-quoted-paren 1)
 ;; 				(show-paren-mode 'disable)))
 
-;; https://github.com/Fuco1/smartparens
-;; Sample instructions for new package installer:
-;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
-(use-package smartparens)
+(use-package smartparens
+    ;; https://github.com/Fuco1/smartparens
+    ;; Sample instructions for new package installer:
+    ;; https://github.com/Fuco1/smartparens/wiki/Quick-tour
+  :config
+  (add-hook 'prog-minor-modes-common 'show-paren-mode)
+  :init
+  (add-hook 'prog-minor-modes-common 'smartparens-mode))
+
+;; FIXME: sample config for smartparens
+;; https://github.com/jsalzbergedu/etoile-emacs/blob/b72e67b27326e2ca48e46cd89e4c522de4dd612e/etoile-programming/etoile-programming.el#L135
+
+(use-package smartparens-rust
+    :disabled
+  :after smartparens
+  :demand t)
 
 (add-hook 'text-mode-hook
 	  #'(lambda () 
 	      (set-fill-column 76) 
-              (electric-quote-local-mode)
 	      (visual-line-mode)))
 
-(use-package yasnippet)                 ; for 'lsp-enable-snippet
+;;(use-package yasnippet)                 ; for 'lsp-enable-snippet

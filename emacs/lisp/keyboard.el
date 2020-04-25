@@ -25,7 +25,6 @@
 (define-key esc-map "-" 'text-scale-decrease)
 
 ;; Shell stuff:
-;; (global-set-key "\C-xc" 'shell)      ; was relevent for emacs-19
 (global-set-key "\C-x\C-c" 'shell)	; instead of 'kill-emacs
 (global-set-key "\C-xc" 'shell)
 (global-set-key "\C-ct" 'telnet)
@@ -78,20 +77,20 @@
 
 (add-hook 'org-mode-hook
 	  (lambda ()
+            (define-key org-mode-map "\C-c2" 'outline-hide-sublevel2)
 	    (define-key org-mode-map "\C-c\C-a" 'outline-show-all)
-	    (define-key org-mode-map "\C-c\C-h" 'outline-hide-other)
+	    (define-key org-mode-map "\C-c\C-h" 'outline-hide-subtree)
 	    (define-key org-mode-map "\C-e" 'move-end-of-line)
 	    (define-key org-mode-map "\C-c." 'bury-buffer)))
 
 (add-hook 'rust-mode-hook
 	  (lambda ()
-	    (define-key rust-mode-map (kbd "TAB") 'company-indent-or-complete-common)
+	    ;;(define-key rust-mode-map (kbd "TAB") 'company-indent-or-complete-common)
             (define-key rust-mode-map (kbd "C-c C-c b") 'cargo-process-build)
-	    (define-key rust-mode-map (kbd "C-c C-c c") 'cargo-process-clippy)
             (define-key rust-mode-map (kbd "C-c C-c n") 'cargo-process-build-nightly)
-	    (define-key rust-mode-map (kbd "C-c C-c t") 'cargo-process-test-with-backtrace)
-            (define-key rust-mode-map (kbd "C-c C-c C-r") 'cargo-process-run-with-backtrace)
+	    (define-key rust-mode-map (kbd "C-c C-c c") 'cargo-process-clippy)
             (define-key rust-mode-map (kbd "C-c C-c r") 'cargo-process-run)
+	    (define-key rust-mode-map (kbd "C-c C-c t") 'cargo-process-test)
 	    (define-key rust-mode-map (kbd "C-M-;") 'mark-rust-statement)))
 
 (add-hook 'scheme-mode-hook

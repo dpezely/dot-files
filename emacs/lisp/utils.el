@@ -169,6 +169,29 @@ time."
 ;;(remote-slime "danielp@wfc-sys-zip-001" 4005 4005)
 ;;(remote-slime "danielp@wfc-zit-dev-001" 4005 4005)
 
+(require 'lunar)
+(defun next-major-lunar-phase ()
+  "For use within `holiday-other-holidays' list; see settings.el"
+  (let* ((date (calendar-current-date))
+	 (month (car date))
+	 (day (cadr date))
+	 (year (caddr date))
+	 result)
+    (find-if (lambda (x)
+	       (when (or (> (caar x) month)
+			 (and (= (caar x) month) (>= (cadar x) day)))
+		 (let ((status (caddr x)))
+		   (cond
+		     ((eq status 0)
+		      (push (list (car x) (concat "New moon " (cadr x)))
+			    result))
+		     ((eq status 2)
+		      (push (list (car x) (concat "Full moon " (cadr x)))
+			    result))))))
+	     (lunar-phase-list month year))
+    result))
+
+
 (defun fi:extract-list (arg)
   "Take the list after the point and remove the surrounding list.  With
 argument ARG do it that many times."
@@ -228,20 +251,22 @@ argument ARG do it that many times."
   (let ((sentence-end "[;}]"))
     (mark-end-of-sentence 1)))
 
-(defun cargo-process-run-with-backtrace ()
+(defun cargo-process-test-with-backtrace ()
   "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
   (interactive)
-  (let ((trace (getenv "RUST_BACKTRACE")))
+  (let ((value (getenv "RUST_BACKTRACE")))
     (setenv "RUST_BACKTRACE" "full")
-    (let ((cargo-process--command-run (concat cargo-process--command-run
+    (let ((cargo-process--command-test (concat cargo-process--command-test
                                                " --verbose")))
-      (cargo-process-run))
-    (setenv "RUST_BACKTRACE" trace)))
+      (cargo-process-test))
+    (if value
+	(setenv "RUST_BACKTRACE" value)
+      (setenv "RUST_BACKTRACE"))))
 
-(defun cargo-process-test-with-backtrace (nightly backtrace)
+(defun cargo-process-test-with-nightly (nightly backtrace)
   "Compile Rust language file and run tests with RUST_BACKTRACE enabled"
   (interactive "xNightly? \nxBacktrace? ")
-  (let ((trace (getenv "RUST_BACKTRACE")))
+  (let ((value (getenv "RUST_BACKTRACE")))
     (when backtrace
       (setenv "RUST_BACKTRACE" "full"))
     (when nightly
@@ -251,7 +276,9 @@ argument ARG do it that many times."
                                                 cargo-process--command-test
                                                 " --verbose")))
       (cargo-process-test))
-    (setenv "RUST_BACKTRACE" trace)))
+    (if value
+	(setenv "RUST_BACKTRACE" value)
+      (setenv "RUST_BACKTRACE"))))
 
 (defun cargo-process-build-nightly ()
   (interactive)
@@ -259,25 +286,25 @@ argument ARG do it that many times."
                                               cargo-process--command-build)))
     (cargo-process-build)))
 
-(defun company-lsp--rust-completion-snippet (item)
-  "Function providing snippet with the rust language.
-  It parses the function's signature in ITEM (a CompletionItem)
-  to expand its arguments."
-  ;; https://github.com/tigersoldier/company-lsp
-  (-when-let* ((kind (gethash "kind" item))
-               (is-function (= kind 3)))
-    (let* ((detail (gethash "detail" item))
-           (snippet (when (and detail
-                               (s-matches? "^\\(pub \\)?\\(unsafe \\)?fn "
-                                           detail))
-                      (-some--> (substring detail (1+ (s-index-of "(" detail))
-                                           (s-index-of ")" detail))
-                                (replace-regexp-in-string
-                                 "^[^,]*self\\(, \\)?" "" it)
-                                (s-split ", " it)
-                                (mapconcat
-                                 (lambda (x) (format "${%s}" x)) it ", ")))))
-      (concat "(" (or snippet "$1") ")$0"))))
+;; (defun company-lsp--rust-completion-snippet (item)
+;;   "Function providing snippet with the rust language.
+;;   It parses the function's signature in ITEM (a CompletionItem)
+;;   to expand its arguments."
+;;   ;; https://github.com/tigersoldier/company-lsp
+;;   (-when-let* ((kind (gethash "kind" item))
+;;                (is-function (= kind 3)))
+;;     (let* ((detail (gethash "detail" item))
+;;            (snippet (when (and detail
+;;                                (s-matches? "^\\(pub \\)?\\(unsafe \\)?fn "
+;;                                            detail))
+;;                       (-some--> (substring detail (1+ (s-index-of "(" detail))
+;;                                            (s-index-of ")" detail))
+;;                                 (replace-regexp-in-string
+;;                                  "^[^,]*self\\(, \\)?" "" it)
+;;                                 (s-split ", " it)
+;;                                 (mapconcat
+;;                                  (lambda (x) (format "${%s}" x)) it ", ")))))
+;;       (concat "(" (or snippet "$1") ")$0"))))
 
 (defun date-today ()
   "Insert today's date"
@@ -287,6 +314,19 @@ argument ARG do it that many times."
 	 (day (cadr date))
 	 (year (caddr date)))
     (insert (format "%d-%d-%d" year month day))))
+
+(defun omit-version-control-mode-line ()
+  "Mute branch name from buffer mode status line; e.g., branch from git repo"
+  (interactive)
+  (vc-mode-line nil))
+
+(defun outline-hide-sublevel2 ()
+  (interactive)
+  (outline-hide-sublevels 2))
+
+(defun markdown-hide-sublevel2 ()
+  (interactive)
+  (markdown-hide-sublevels 2))
 
 (defun rust-convert-if-let-to-match ()
   "Convert Rust language `if let` to `match` syntax"

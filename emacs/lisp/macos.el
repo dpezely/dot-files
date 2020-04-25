@@ -51,13 +51,15 @@
         (concat (getenv "PATH")
                 ":/usr/local/bin"
                 ":" (expand-file-name "~/") ".cargo/bin"
-                ":" (expand-file-name "~/")
-		".rustup/toolchains/stable-x86_64-apple-darwin/bin"))
+                ;; ":" (expand-file-name "~/")
+		;; ".rustup/toolchains/stable-x86_64-apple-darwin/bin"
+                ))
 
-(setenv "RUST_SRC_PATH"
-	(concat (expand-file-name "~/")
-		".rustup/toolchains/stable-x86_64-apple-darwin/"
-		"lib/rustlib/src/rust/src"))
+;; Should be discoverable as of Rust Edition 2018 unless using custom path:
+;; (setenv "RUST_SRC_PATH"
+;; 	(concat (expand-file-name "~/")
+;; 		".rustup/toolchains/stable-x86_64-apple-darwin/"
+;; 		"lib/rustlib/src/rust/src"))
 
 (setq ring-bell-function #'(lambda () nil) ; mute gaudy "<!>" icon on macOS
       python-shell-exec-path '("/usr/local/bin")

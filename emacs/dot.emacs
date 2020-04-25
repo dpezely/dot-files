@@ -1,21 +1,24 @@
 ;;;; .emacs						-*- emacs-lisp -*-
 
 ;; When debugging on new versions, remember to start here: (view-emacs-news)
+;; and try: (setq debug-on-error t)
 
 (add-to-list 'load-path (expand-file-name "~/emacs/lisp"))
 (setq custom-file (expand-file-name "~/.emacs.d/custom.el"))
 (load custom-file t)
 
-(cond ((eq window-system 'ns)		; Cocoa aka NextStep
-       (load "macos"))
-      ((eq window-system 'mac)
-       ;; These include fixed value screen sizes:
-       (if (boundp 'aquamacs-version)
-	   (load "MacOSX-Aquamacs")	;Aqua supersedes Carbon
-	   (load "MacOSX-Carbon")))
-      ((eq window-system 'x)
-       (load "ubuntu"))
-      ((eq window-system 'windows)
+(cond ((string-equal system-type "gnu/linux")
+       (if (string-match "--prefix=/nix" system-configuration-options)
+	   (load "nixos")
+	 (load "ubuntu")))
+      ((string-equal system-type "darwin")
+       (cond ((eq window-system 'ns)		; Cocoa aka NeXTSTEP
+              (load "macos"))
+             ((eq window-system 'mac)
+              (if (boundp 'aquamacs-version)
+                  (load "MacOSX-Aquamacs")	;Aqua supersedes Carbon
+                (load "MacOSX-Carbon")))))
+      ((string-equal system-type "windows-nt")
        (load "MS-Windows"))
       (t
        ;; http://common-lisp.net/project/slime/doc/html/slime.html
@@ -59,7 +62,7 @@
   (slime-setup))
 
 (display-time)
-(display-battery-mode)
+;;(display-battery-mode)
 
 (defun Home () 
   "Upon starting emacs, upon login-- execute this function.
@@ -73,3 +76,8 @@
   (unless (buffer-file-name)   ; because *Fancy Diary Entries* has no filename
     (split-window-with-another-buf "REMINDER"))
   (server-start))
+
+;; ;; For macos:
+;; (Home)
+;; (use-laptop-display nil)
+;; (wide)

@@ -1,0 +1,22 @@
+! xrdb -merge ~/.Xresources
+! See man X(7) for details.
+! Use 'xwininfo' or 'appres' to get existing values
+
+browser*geometry: 1000x850+200+0
+! Ignored by Firefox, regardless of using /usr/bin/firefox --class=browser
+! Consider: /usr/bin/firefox --width 1200 --height 850
+! But position has historically been ignored by Firefox.
+
+Clock*geometry: 50x50+0+0
+Clock*Background: black
+Clock*BorderColor: #333
+Clock*jewel: #ddd
+Clock*hour: #999
+Clock*minute: #999
+
+XTerm*geometry: 100x24+0-0
+Terminal*geometry: 100x24+0-0
+xfce4-terminal*geometry: 100x24+0-0
+! For specifying geometry for xfce4-terminal,
+! edit ${XDG_CONFIG_HOME}/xfce4/terminal/terminalrc
+! to include: MiscDefaultGeometry=100x24+0-0

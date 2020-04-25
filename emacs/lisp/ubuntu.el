@@ -18,11 +18,12 @@
   ;; any use of 'set-default-font, restart Emacs, and evaluate:
   ;; (assoc 'font (frame-parameters))
   ;; (/ (display-pixel-width) (display-mm-width) 1.0)
-  ;; monitor with 96dpi => 15pt font, 192dpi => 29pt font, 240dpi => 37pt font
   ;; Dell XPS 13" laptop: Full HD, 16.04 ... 17.10 => 17pt font:
   ;;(set-default-font "-*-UbuntuMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
   ;; Samsung 13" laptop: Full HD, 18.04, 120dpi => 17pt font:
-  (set-default-font "-*-DejaVu Sans Mono-normal-normal-*-*-17-*-*-*-m-*-iso10646-1")
+  ;;(set-default-font "-*-DejaVu Sans Mono-normal-normal-*-*-17-*-*-*-m-*-iso10646-1")
+  ;; external 24" Full HD:
+  (set-default-font "-*-DejaVu Sans Mono-normal-normal-*-*-15-*-*-*-m-*-iso10646-1")
   ;;(set-default-font "-*-FreeMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
   ;;(set-default-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
   ;;(set-default-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
@@ -30,16 +31,16 @@
   (defun tall ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-position (selected-frame) 470 0)
-    (set-frame-height (selected-frame) 50)
-    (set-frame-width (selected-frame) 100))
+    (set-frame-width (selected-frame) 100)
+    (set-frame-height (selected-frame) 60)
+    (set-frame-position (selected-frame) 470 0))
 
   (defun wide ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 175x65
-    (set-frame-position (selected-frame) 70 10)
-    (set-frame-height (selected-frame) 49)
-    (set-frame-width (selected-frame) 176)))
+    (set-frame-position (selected-frame) 70 20)
+    (set-frame-width (selected-frame) 180)
+    (set-frame-height (selected-frame) 55)))
 
 ;; The rationale for this config is for a Linux workstation to
 ;; essentially be functionally identical to a deployed server, with
@@ -85,20 +86,3 @@
 ;; 		      xrefs)
 ;; 	      (print xrefs)
 ;; 	      (slime-edit-definition-cont xrefs name where))))
-
-(setenv "PATH"
-        (concat (getenv "PATH")
-                ":/usr/local/bin"
-                ":" (expand-file-name "~/") ".cargo/bin"
-                ":" (expand-file-name "~/")
-                ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/"))
-
-(setq cargo-process--custom-path-to-bin
-      (concat (expand-file-name "~/")
-              ".rustup/toolchains/stable-x86_64-unknown-linux-gnu/"
-              "lib/rustlib/src/rust/src"))
-
-(setenv "RUST_SRC_PATH"
-	(concat (expand-file-name "~/")
-		".rustup/toolchains/stable-x86_64-unknown-linux-gnu/"
-		"lib/rustlib/src/rust/src"))
