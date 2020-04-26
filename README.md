@@ -26,9 +26,12 @@ configures most editing modes.  Apparently, Emacs loads faster by using this
 method, yet speed was never a concern.  It's used here for keeping
 configuration tidy.  However, this is a work in progress.
 
-File paths and environment variables live in OS-specific files such as
-[~/emacs/lisp/ubuntu.el](emacs/lisp/ubuntu.el) for current LTS edition or
-[~/emacs/lisp/macos.el](emacs/lisp/macos.el), updated for Mojave/10.14.
+File paths and environment variables live in OS-specific files such as:
+
+- [~/emacs/lisp/ubuntu.el](emacs/lisp/ubuntu.el) for current Xubuntu LTS
+- [~/emacs/lisp/nixos.el](emacs/lisp/nixos.el) new/fragile for
+  [NixOS 20.03](configuration.nix)
+- [~/emacs/lisp/macos.el](emacs/lisp/macos.el), updated for Mojave/10.14
 
 ### Compiling Emacs Locally
 
