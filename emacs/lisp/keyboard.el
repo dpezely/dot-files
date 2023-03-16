@@ -1,6 +1,6 @@
 ;; You may think my key mappings are weird, and you're right!
 ;;
-;; Emacs standard mapping convention used: 
+;; Emacs standard mapping convention used:
 ;; Custom user stuff is ^C-whatever, exceptions are for cursor movement.
 
 ;; Unmapped 'cause they're just plain annoying: some fixed in emacs-19.
@@ -16,8 +16,8 @@
 (global-set-key "\C-c " 'set-mark-command)
 (global-set-key "\C-ci" 'insert-buffer)		; complements C-x i
 (global-set-key "\C-co" 'previous-other-window) ; Pez-ism: C-x o in reverse
-(global-set-key "\C-cu" 'undo) 
-(global-set-key "\C-c." 'bury-buffer) 
+(global-set-key "\C-cu" 'undo)
+(global-set-key "\C-c." 'bury-buffer)
 (global-set-key "\C-c;" 'comment-region)
 
 ;; reset font size by evaluating: (text-scale-adjust 0)
@@ -33,8 +33,8 @@
 
 ;; To fly around the screen: (fns mostly Pez-isms)
 (define-key esc-map "P" 'scroll-half-window-down)
-(define-key esc-map "N" 'scroll-half-window-up) 
-(define-key esc-map "[" 'top-of-window) 
+(define-key esc-map "N" 'scroll-half-window-up)
+(define-key esc-map "[" 'top-of-window)
 (define-key esc-map "]" 'bottom-of-window)
 (define-key esc-map "m" 'move-to-window-line) ; Middle: or unintuitive M-r
 (global-set-key "\C-cm" 'move-to-center-of-line)
@@ -44,6 +44,14 @@
 (define-key esc-map "-" 'shrink-window)
 (global-set-key "\C-x2" 'split-window-with-another-buf) ;was 'split-window-vertically
 (global-set-key "\C-x3" 'split-window-horiz-with-another-buf) ;was 'split-window-horizontally
+
+
+;; Ivy related, but avoid enabling full counsel-mode
+;; https://github.com/abo-abo/swiper/
+(global-set-key (kbd "M-C-s") 'swiper-isearch)
+;;(global-set-key (kbd "M-x") 'counsel-M-x)
+;;(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "M-y") 'counsel-yank-pop)
 
 (add-hook 'arc-mode-hook
 	  (lambda ()
@@ -61,10 +69,9 @@
             (define-key c++-mode-map  "\n"   'newline-and-indent)
             (define-key c++-mode-map  "\C-c." 'bury-buffer)))
 
-(add-hook 'elixir-mode-hook
+(add-hook 'diff-mode-hook
 	  (lambda ()
-	    (define-key elixir-mode-map "\C-c\C-d" 'elixir-mode-open-docs-stable)
-	    (define-key elixir-mode-map "\C-c\C-z" 'alchemist-iex-run)))
+	    (define-key diff-mode-map "\M--" nil)))
 
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()
@@ -80,8 +87,19 @@
             (define-key org-mode-map "\C-c2" 'outline-hide-sublevel2)
 	    (define-key org-mode-map "\C-c\C-a" 'outline-show-all)
 	    (define-key org-mode-map "\C-c\C-h" 'outline-hide-subtree)
+            (define-key org-mode-map "\C-c\C-\M-h" 'outline-show-subtree)
+            ;;(define-key org-mode-map "\C-c\C-q" . outline-hide-sublevels)
 	    (define-key org-mode-map "\C-e" 'move-end-of-line)
 	    (define-key org-mode-map "\C-c." 'bury-buffer)))
+
+(add-hook 'markdown-mode-hook
+	  (lambda ()
+            (define-key markdown-mode-map "\C-c2" 'outline-hide-sublevel2)
+	    (define-key markdown-mode-map "\C-c\C-a" 'outline-show-all)
+	    (define-key markdown-mode-map "\C-c\C-h" 'outline-hide-subtree)
+            (define-key markdown-mode-map "\C-c\C-\M-h" 'outline-show-subtree)
+	    (define-key markdown-mode-map "\C-e" 'move-end-of-line)
+	    (define-key markdown-mode-map "\C-c." 'bury-buffer)))
 
 (add-hook 'rust-mode-hook
 	  (lambda ()
@@ -104,5 +122,5 @@
 
 (add-hook 'w3-mode-hook
 	  (lambda ()
-            (define-key w3m-mode-map "\M-[" 'top-of-window) 
+            (define-key w3m-mode-map "\M-[" 'top-of-window)
             (define-key w3m-mode-map "\M-]" 'bottom-of-window)))

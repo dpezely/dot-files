@@ -7,40 +7,40 @@
 (when window-system
   (setq scroll-bar-mode 'right)
   ;; Force reset of placing scroll-bars:
-  (scroll-bar-mode 0)
-  (scroll-bar-mode 1)
+  ;;(scroll-bar-mode 0)
+  ;;(scroll-bar-mode 1)
 
   ;; Fix clipboard problem: (no longer needed, probably long before Emacs-25)
   ;; (setq select-enable-clipboard t
   ;;       interprogram-paste-function 'gui-selection-value)
 
   ;; To determine best font, start with the default by uncommenting
-  ;; any use of 'set-default-font, restart Emacs, and evaluate:
+  ;; any use of 'set-frame-font, restart Emacs, and evaluate:
   ;; (assoc 'font (frame-parameters))
   ;; (/ (display-pixel-width) (display-mm-width) 1.0)
   ;; Dell XPS 13" laptop: Full HD, 16.04 ... 17.10 => 17pt font:
-  ;;(set-default-font "-*-UbuntuMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
+  ;;(set-frame-font "-*-UbuntuMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
   ;; Samsung 13" laptop: Full HD, 18.04, 120dpi => 17pt font:
-  ;;(set-default-font "-*-DejaVu Sans Mono-normal-normal-*-*-17-*-*-*-m-*-iso10646-1")
-  ;; external 24" Full HD:
-  (set-default-font "-*-DejaVu Sans Mono-normal-normal-*-*-15-*-*-*-m-*-iso10646-1")
-  ;;(set-default-font "-*-FreeMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
-  ;;(set-default-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
-  ;;(set-default-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
+  ;;(set-frame-font "-*-DejaVu Sans Mono-normal-normal-*-*-17-*-*-*-m-*-iso10646-1")
+  ;; external 24" Full HD 16:10 monitor:
+  (set-frame-font "-*-DejaVu Sans Mono-normal-normal-*-*-15-*-*-*-m-*-iso10646-1")
+  ;;(set-frame-font "-*-FreeMono-normal-normal-normal-*-17-*-*-*-m-*-iso10646-1")
+  ;;(set-frame-font "-*-LucidaTypewriter-Normal-R-*-Sans-17-*-*-*-M-*-ISO8859-1")
+  ;;(set-frame-font "-*-LucidaTypewriter-Medium-R-*-Sans-15-*-*-*-M-*-ISO8859-1")
 
   (defun tall ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 65
-    (set-frame-width (selected-frame) 100)
+    (set-frame-width (selected-frame) 90)
     (set-frame-height (selected-frame) 60)
     (set-frame-position (selected-frame) 470 0))
 
   (defun wide ()
     (interactive)
     ;; 800x600 max height 40; 1024x786 max height 48; 1280x1024 max height 175x65
-    (set-frame-position (selected-frame) 70 20)
+    (set-frame-position (selected-frame) 130 20)
     (set-frame-width (selected-frame) 180)
-    (set-frame-height (selected-frame) 55)))
+    (set-frame-height (selected-frame) 60)))
 
 ;; The rationale for this config is for a Linux workstation to
 ;; essentially be functionally identical to a deployed server, with
