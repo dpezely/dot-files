@@ -1,9 +1,9 @@
 ## .bashrc
 
-export LANG=en_CA.UTF-8
+export LANG=en_US.UTF-8
 export LC_CTYPE=$LANG
-export GDM_LANG=en_CA
-export LANGUAGE=en_CA
+export GDM_LANG=en_US
+export LANGUAGE=en_US
 
 umask 022
 
